@@ -53,7 +53,10 @@ public class ChessPiece {
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
         Collection<ChessMove> possibleMoves;
-
+        // Case bishop
+        // case rook
+        // case etc.
+        // make helper functions to make it clean
         throw new RuntimeException("Not implemented");
     }
 }
