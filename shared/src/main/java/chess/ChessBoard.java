@@ -11,7 +11,7 @@ import java.util.HashMap;
  */
 public class ChessBoard {
 
-    HashMap<ChessPosition, ChessPiece> board;
+    private HashMap<ChessPosition, ChessPiece> chessboard;
 
     public ChessBoard() {
         resetBoard();
@@ -24,7 +24,7 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        this.board.put(position, piece);
+        this.chessboard.put(position, piece);
     }
 
     /**
@@ -35,7 +35,7 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return this.board.get(position);
+        return this.chessboard.get(position);
     }
 
     /**
@@ -43,38 +43,23 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        board.clear();
-        resetWhiteTeam();
-        resetBlackTeam();
+        if (this.chessboard != null) { this.chessboard.clear(); }
+        resetPieces(1, 2, ChessGame.TeamColor.WHITE);
+        resetPieces(8, 7, ChessGame.TeamColor.BLACK);
     }
 
-    private void resetWhiteTeam() {
-        addPiece(newPos(1,1), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
-        addPiece(newPos(1,2), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        addPiece(newPos(1,3), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        addPiece(newPos(1,4), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.QUEEN));
-        addPiece(newPos(1,5), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KING));
-        addPiece(newPos(1,6), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.BISHOP));
-        addPiece(newPos(1,7), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.KNIGHT));
-        addPiece(newPos(1,8), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.ROOK));
+    private void resetPieces(int rowForSpecialPieces, int rowForPawns, ChessGame.TeamColor teamColor) {
+        addPiece(newPos(rowForSpecialPieces,1), newPiece(teamColor, ChessPiece.PieceType.ROOK));
+        addPiece(newPos(rowForSpecialPieces,2), newPiece(teamColor, ChessPiece.PieceType.KNIGHT));
+        addPiece(newPos(rowForSpecialPieces,3), newPiece(teamColor, ChessPiece.PieceType.BISHOP));
+        addPiece(newPos(rowForSpecialPieces,4), newPiece(teamColor, ChessPiece.PieceType.QUEEN));
+        addPiece(newPos(rowForSpecialPieces,5), newPiece(teamColor, ChessPiece.PieceType.KING));
+        addPiece(newPos(rowForSpecialPieces,6), newPiece(teamColor, ChessPiece.PieceType.BISHOP));
+        addPiece(newPos(rowForSpecialPieces,7), newPiece(teamColor, ChessPiece.PieceType.KNIGHT));
+        addPiece(newPos(rowForSpecialPieces,8), newPiece(teamColor, ChessPiece.PieceType.ROOK));
 
         for (int i = 1; i < 9; i++) {
-            addPiece(newPos(2,i), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
-        }
-    }
-
-    private void resetBlackTeam() {
-        addPiece(newPos(8,1), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-        addPiece(newPos(8,2), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        addPiece(newPos(8,3), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        addPiece(newPos(8,4), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.QUEEN));
-        addPiece(newPos(8,5), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KING));
-        addPiece(newPos(8,6), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.BISHOP));
-        addPiece(newPos(8,7), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.KNIGHT));
-        addPiece(newPos(8,8), newPiece(ChessGame.TeamColor.BLACK, ChessPiece.PieceType.ROOK));
-
-        for (int i = 1; i < 9; i++) {
-            addPiece(newPos(7,i), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            addPiece(newPos(rowForPawns,i), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
         }
     }
 
