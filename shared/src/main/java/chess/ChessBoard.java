@@ -11,9 +11,10 @@ import java.util.HashMap;
  */
 public class ChessBoard {
 
-    private HashMap<ChessPosition, ChessPiece> chessboard;
+    private final HashMap<ChessPosition, ChessPiece> chessboard;
 
     public ChessBoard() {
+        this.chessboard = new HashMap<>();
         resetBoard();
     }
 
