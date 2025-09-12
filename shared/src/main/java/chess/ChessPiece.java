@@ -1,5 +1,8 @@
 package chess;
 
+import chess.validPieceMoves.BishopValidMoves;
+
+import java.util.ArrayList;
 import java.util.Collection;
 
 /**
@@ -64,7 +67,15 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> possibleMoves;
+        Collection<ChessMove> possibleMoves = new ArrayList<>();
+
+        switch (type) {
+            case BISHOP:
+                BishopValidMoves bishopValidMoves = new BishopValidMoves(possibleMoves);
+                return bishopValidMoves.validMoves(board, myPosition);
+            case QUEEN:
+                break;
+        }
         // Case bishop
         // case rook
         // case etc.
