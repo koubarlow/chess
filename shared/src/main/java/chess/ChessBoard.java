@@ -11,11 +11,10 @@ import java.util.HashMap;
  */
 public class ChessBoard {
 
-    private final HashMap<ChessPosition, ChessPiece> chessboard;
+    ChessPiece[][] board;
 
     public ChessBoard() {
-        this.chessboard = new HashMap<>();
-        resetBoard();
+        this.board = new ChessPiece[8][8];
     }
 
     /**
@@ -25,7 +24,9 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        this.chessboard.put(position, piece);
+        int row = position.getRow() - 1;
+        int col = position.getRow() - 1;
+        this.board[row][col] = piece;
     }
 
     /**
@@ -36,7 +37,9 @@ public class ChessBoard {
      * position
      */
     public ChessPiece getPiece(ChessPosition position) {
-        return this.chessboard.get(position);
+        int row = position.getRow() - 1;
+        int col = position.getRow() - 1;
+        return this.board[row][col];
     }
 
     /**
@@ -44,7 +47,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        if (this.chessboard != null) { this.chessboard.clear(); }
+        this.board = new ChessPiece[8][8];
         resetPieces(1, 2, ChessGame.TeamColor.WHITE);
         resetPieces(8, 7, ChessGame.TeamColor.BLACK);
     }
@@ -60,7 +63,7 @@ public class ChessBoard {
         addPiece(newPos(rowForSpecialPieces,8), newPiece(teamColor, ChessPiece.PieceType.ROOK));
 
         for (int i = 1; i < 9; i++) {
-            addPiece(newPos(rowForPawns,i), newPiece(ChessGame.TeamColor.WHITE, ChessPiece.PieceType.PAWN));
+            addPiece(newPos(rowForPawns,i), newPiece(teamColor, ChessPiece.PieceType.PAWN));
         }
     }
 

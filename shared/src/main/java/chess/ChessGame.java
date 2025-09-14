@@ -11,10 +11,11 @@ import java.util.Collection;
 public class ChessGame {
 
     private TeamColor teamTurn;
-    private ChessBoard board;
+    private ChessBoard chessBoard;
 
     public ChessGame() {
         this.setTeamTurn(TeamColor.WHITE);
+        this.setBoard(new ChessBoard());
     }
 
     /**
@@ -100,7 +101,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        this.board = new ChessBoard();
+        this.chessBoard = board;
     }
 
     /**
@@ -109,6 +110,6 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        return this.board;
+        return this.chessBoard;
     }
 }
