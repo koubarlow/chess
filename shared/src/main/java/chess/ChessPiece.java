@@ -1,9 +1,9 @@
 package chess;
 
 import chess.validPieceMoves.BishopValidMoves;
+import chess.validPieceMoves.KingValidMoves;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import java.util.*;
 
 /**
  * Represents a single chess piece
@@ -20,6 +20,20 @@ public class ChessPiece {
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
         this.pieceColor = pieceColor;
         this.type = type;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+        ChessPiece piece = (ChessPiece) o;
+        return pieceColor == piece.pieceColor && type == piece.type && Objects.equals(currentPosition, piece.currentPosition);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(pieceColor, type, currentPosition);
     }
 
     /**
@@ -67,19 +81,37 @@ public class ChessPiece {
      * @return Collection of valid moves
      */
     public Collection<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
-        Collection<ChessMove> possibleMoves = new ArrayList<>();
 
+        Set<ChessMove> possibleMoves = new HashSet<ChessMove>();
+//        MoveCalculator calculator = MoveCalculator.create(piece.getType());
+//        Set<ChessPosition> candidateMoves = calculator.pieceMoves(piece, board, position)
         switch (type) {
             case BISHOP:
-                BishopValidMoves bishopValidMoves = new BishopValidMoves(possibleMoves);
-                return bishopValidMoves.validMoves(board, myPosition);
+                return BishopValidMoves.pieceMoves(board, myPosition);
             case QUEEN:
                 break;
+            case PAWN:
+                break;
+            case ROOK:
+                break;
+            case KNIGHT:
+                break;
+            case KING:
+                return KingValidMoves.pieceMoves(board, myPosition);
         }
         // Case bishop
         // case rook
         // case etc.
         // make helper functions to make it clean
-        throw new RuntimeException("Not implemented");
+        return possibleMoves;
+    }
+
+    @Override
+    public String toString() {
+        return "ChessPiece{" +
+                "pieceColor=" + pieceColor +
+                ", type=" + type +
+                ", currentPosition=" + currentPosition +
+                '}';
     }
 }

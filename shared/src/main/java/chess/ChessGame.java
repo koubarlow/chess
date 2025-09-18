@@ -112,4 +112,12 @@ public class ChessGame {
     public ChessBoard getBoard() {
         return this.chessBoard;
     }
+
+    @Override
+    public String toString() {
+        return "ChessGame{" +
+                "teamTurn=" + teamTurn +
+                ", chessBoard=" + chessBoard +
+                '}';
+    }
 }

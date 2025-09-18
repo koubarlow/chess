@@ -2,75 +2,129 @@ package chess.validPieceMoves;
 
 import chess.ChessBoard;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 
-import java.util.Collection;
-import java.util.Collections;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class BishopValidMoves {
 
-    private final Collection<ChessMove> moves;
+    public static Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
+    {
 
-    private int currentRow;
-    private int currentCol;
+        Set<ChessMove> moves = seeDownRight(board, myPosition);
+        moves = Stream.concat(moves.stream(), seeForwardRight(board, myPosition).stream()).collect(Collectors.toSet());
+        moves = Stream.concat(moves.stream(), seeDownLeft(board, myPosition).stream()).collect(Collectors.toSet());
+        moves = Stream.concat(moves.stream(), seeForwardLeft(board, myPosition).stream()).collect(Collectors.toSet());
 
-    private int currentlyProposedRow;
-    private int currentlyProposedCol;
-    private boolean notAPieceInProposedPos;
-
-    public BishopValidMoves(Collection<ChessMove> moves) {
-        this.moves = moves;
+        for (ChessMove move : moves) {
+            System.out.println(move);
+        }
+        return moves;
     }
 
-    public Collection<ChessMove> validMoves(ChessBoard board, ChessPosition myPosition) {
+    public static Set<ChessMove> seeForwardLeft(ChessBoard board, ChessPosition position) {
+        Set<ChessMove> forwardLeftMoves = new HashSet<>();
+        int row = position.getRow();
+        int col = position.getColumn();
+        canKeepGoing = true;
 
-        this.currentRow = myPosition.getRow();
-        this.currentCol = myPosition.getColumn();
+        while (row < 8 && col > 1 && canKeepGoing) {
+            row++;
+            col--;
+            ChessMove validMove = validMoveHelper(row,col,board,position);
 
-        resetProposedPos();
-
-        while ((currentlyProposedRow < 8 & currentlyProposedCol < 8) && notAPieceInProposedPos) {
-            validMoveHelper(1, 1, board, myPosition);
+            if (validMove != null) {
+                forwardLeftMoves.add(validMove);
+            } else {
+                break;
+            }
         }
 
-        resetProposedPos();
-
-        while ((currentlyProposedRow > 0 & currentlyProposedCol > 0) && notAPieceInProposedPos) {
-            validMoveHelper(-1, -1, board, myPosition);
-        }
-
-        resetProposedPos();
-
-        while ((currentlyProposedRow < 8 & currentlyProposedCol > 0) && notAPieceInProposedPos) {
-            validMoveHelper(1, -1, board, myPosition);
-        }
-
-        resetProposedPos();
-
-        while ((currentlyProposedRow > 0 & currentlyProposedCol < 8) && notAPieceInProposedPos) {
-            validMoveHelper(-1, 1, board, myPosition);
-        }
-
-        return this.moves;
+        return forwardLeftMoves;
     }
 
-    private void resetProposedPos() {
-        this.currentlyProposedRow = this.currentRow;
-        this.currentlyProposedCol = this.currentCol;
-        this.notAPieceInProposedPos = true;
-    }
+    public static Set<ChessMove> seeForwardRight(ChessBoard board, ChessPosition position) {
+        Set<ChessMove> forwardRightMoves = new HashSet<>();
+        int row = position.getRow();
+        int col = position.getColumn();;
+        canKeepGoing = true;
 
-    private void validMoveHelper(int incrementRowBy, int incrementColBy, ChessBoard board, ChessPosition myPosition) {
-        this.currentlyProposedRow += incrementRowBy;
-        this.currentlyProposedCol += incrementColBy;
-        ChessPosition proposedPosition = new ChessPosition(currentlyProposedRow, currentlyProposedCol);
+        while (row < 8 && col < 8 && canKeepGoing) {
+            row++;
+            col++;
+            ChessMove validMove = validMoveHelper(row,col,board,position);
 
-        if (board.getPiece(proposedPosition) == null) {
-            this.notAPieceInProposedPos = false;
-            return;
+            if (validMove != null) {
+                forwardRightMoves.add(validMove);
+            } else {
+                break;
+            }
         }
 
-        ChessMove proposedMove = new ChessMove(myPosition, proposedPosition, null);
-        this.moves.add(proposedMove);
+        return forwardRightMoves;
+    }
+
+    public static Set<ChessMove> seeDownLeft(ChessBoard board, ChessPosition position) {
+        Set<ChessMove> downLeftMoves = new HashSet<>();
+        int row = position.getRow();
+        int col = position.getColumn();;
+        canKeepGoing = true;
+
+        while (row > 1 && col > 1 && canKeepGoing) {
+            row--;
+            col--;
+            ChessMove validMove = validMoveHelper(row,col,board,position);
+
+            if (validMove != null) {
+                downLeftMoves.add(validMove);
+            } else {
+                break;
+            }
+        }
+
+        return downLeftMoves;
+    }
+
+    static boolean canKeepGoing = true;
+
+    public static Set<ChessMove> seeDownRight(ChessBoard board, ChessPosition position) {
+        Set<ChessMove> downRightMoves = new HashSet<>();
+        int row = position.getRow();
+        int col = position.getColumn();;
+        canKeepGoing = true;
+
+        while (row > 1 && col < 8 && canKeepGoing) {
+            row--;
+            col++;
+            ChessMove validMove = validMoveHelper(row,col,board,position);
+
+            if (validMove != null) {
+                downRightMoves.add(validMove);
+            } else {
+                break;
+            }
+        }
+
+        return downRightMoves;
+    }
+
+    public static ChessMove validMoveHelper(int row, int col, ChessBoard board, ChessPosition myPosition) {
+
+        ChessPosition proposedPosition = new ChessPosition(row, col);
+
+        if (board.getPiece(proposedPosition) != null) {
+            ChessPiece myPiece = board.getPiece(myPosition);
+            if (myPiece.getTeamColor() == board.getPiece(proposedPosition).getTeamColor()){
+                return null;
+            } else {
+                canKeepGoing = false;
+                return new ChessMove(myPosition, proposedPosition, null);
+            }
+        } else {
+            return new ChessMove(myPosition, proposedPosition, null);
+        }
     }
 }
