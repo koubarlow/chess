@@ -87,7 +87,9 @@ public class ChessPiece {
 //        Set<ChessPosition> candidateMoves = calculator.pieceMoves(piece, board, position)
         switch (type) {
             case BISHOP:
-                return BishopValidMoves.pieceMoves(board, myPosition);
+                BishopValidMoves bishopVM = new BishopValidMoves();
+                System.out.println("my boi:" + bishopVM.pieceMoves(board, myPosition));
+                return bishopVM.pieceMoves(board, myPosition);
             case QUEEN:
                 break;
             case PAWN:
@@ -97,7 +99,8 @@ public class ChessPiece {
             case KNIGHT:
                 break;
             case KING:
-                return KingValidMoves.pieceMoves(board, myPosition);
+                KingValidMoves kingVM = new KingValidMoves();
+                return kingVM.pieceMoves(board, myPosition);
         }
         // Case bishop
         // case rook

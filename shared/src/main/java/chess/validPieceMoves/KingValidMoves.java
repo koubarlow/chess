@@ -11,105 +11,61 @@ import java.util.stream.Stream;
 
 public class KingValidMoves {
 
-    public static Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
-    {
-        Set<ChessMove> moves = new HashSet<>();
-        moves.add(seeLeft(board, myPosition));
-        moves.add(seeForwardLeft(board, myPosition));
-        moves.add(seeForward(board, myPosition));
-        moves.add(seeForwardRight(board, myPosition));
-        moves.add(seeRight(board, myPosition));
-        moves.add(seeDownRight(board, myPosition));
-        moves.add(seeDown(board, myPosition));
-        moves.add(seeDownLeft(board, myPosition));
+    Set<ChessMove> moves;
 
-        for (ChessMove move : moves) {
-            System.out.println(move);
-        }
+    public KingValidMoves() {
+        this.moves = new HashSet<>();
+    }
+
+    public Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
+    {
+        ChessPosition upRight = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() + 1);
+        addIfValid(board, myPosition, upRight);
+
+        ChessPosition right = new ChessPosition(myPosition.getRow(), myPosition.getColumn() + 1);
+        addIfValid(board, myPosition, right);
+
+        ChessPosition downRight = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() + 1);
+        addIfValid(board, myPosition, downRight);
+
+        ChessPosition down = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn());
+        addIfValid(board, myPosition, down);
+
+        ChessPosition downLeft = new ChessPosition(myPosition.getRow() - 1, myPosition.getColumn() - 1);
+        addIfValid(board, myPosition, downLeft);
+
+        ChessPosition left = new ChessPosition(myPosition.getRow(), myPosition.getColumn() - 1);
+        addIfValid(board, myPosition, left);
+
+        ChessPosition upLeft = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn() - 1);
+        addIfValid(board, myPosition, upLeft);
+
+        ChessPosition up = new ChessPosition(myPosition.getRow() + 1, myPosition.getColumn());
+        addIfValid(board, myPosition, up);
+
+//        for (ChessMove move : moves) {
+//            System.out.println(move);
+//        }
+
         return moves;
     }
 
-    public static ChessMove seeForward(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row++;
+    public void addIfValid(ChessBoard board, ChessPosition myPos, ChessPosition propPos) {
 
-        return validMoveHelper(row,col,board,position);
-    }
+        int propRow = propPos.getRow();
+        int propCol = propPos.getColumn();
+        if (propRow > 8 || propCol > 8 || propRow < 1 || propCol < 1) { return; }
 
-    public static ChessMove seeLeft(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        col--;
+        ChessMove propMove = new ChessMove(myPos, propPos,null);
+        ChessPiece pieceInPropMove = board.getPiece(propPos);
 
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeDown(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row--;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeRight(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        col++;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeForwardLeft(ChessBoard board, ChessPosition position) {
-
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row++;
-        col--;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeForwardRight(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row++;
-        col++;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeDownLeft(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row--;
-        col--;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove seeDownRight(ChessBoard board, ChessPosition position) {
-        int row = position.getRow();
-        int col = position.getColumn();;
-        row--;
-        col++;
-
-        return validMoveHelper(row,col,board,position);
-    }
-
-    public static ChessMove validMoveHelper(int row, int col, ChessBoard board, ChessPosition myPosition) {
-
-        ChessPosition proposedPosition = new ChessPosition(row, col);
-        if (board.getPiece(proposedPosition) != null) {
-            ChessPiece myPiece = board.getPiece(myPosition);
-            if (myPiece.getTeamColor() == board.getPiece(proposedPosition).getTeamColor()){
-                return null;
-            } else {
-                return new ChessMove(myPosition, proposedPosition, null);
+        if (pieceInPropMove != null) {
+            ChessPiece myPiece = board.getPiece(myPos);
+            if (myPiece.getTeamColor() == pieceInPropMove.getTeamColor()){
+                return;
             }
-        } else {
-            return new ChessMove(myPosition, proposedPosition, null);
         }
+
+        this.moves.add(propMove);
     }
 }

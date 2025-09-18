@@ -1,130 +1,92 @@
 package chess.validPieceMoves;
 
-import chess.ChessBoard;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
+import javax.sound.midi.SysexMessage;
 import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class BishopValidMoves {
 
-    public static Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
-    {
+    private final Set<ChessMove> moves;
 
-        Set<ChessMove> moves = seeDownRight(board, myPosition);
-        moves = Stream.concat(moves.stream(), seeForwardRight(board, myPosition).stream()).collect(Collectors.toSet());
-        moves = Stream.concat(moves.stream(), seeDownLeft(board, myPosition).stream()).collect(Collectors.toSet());
-        moves = Stream.concat(moves.stream(), seeForwardLeft(board, myPosition).stream()).collect(Collectors.toSet());
+    private int currentRow;
+    private int currentCol;
 
-        for (ChessMove move : moves) {
-            System.out.println(move);
-        }
-        return moves;
+    private int currentlyProposedRow;
+    private int currentlyProposedCol;
+    private boolean notAPieceInProposedPos;
+
+    public BishopValidMoves() {
+        this.moves = new HashSet<>();
     }
 
-    public static Set<ChessMove> seeForwardLeft(ChessBoard board, ChessPosition position) {
-        Set<ChessMove> forwardLeftMoves = new HashSet<>();
-        int row = position.getRow();
-        int col = position.getColumn();
-        canKeepGoing = true;
+    public Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 
-        while (row < 8 && col > 1 && canKeepGoing) {
-            row++;
-            col--;
-            ChessMove validMove = validMoveHelper(row,col,board,position);
+        this.currentRow = myPosition.getRow();
+        this.currentCol = myPosition.getColumn();
 
-            if (validMove != null) {
-                forwardLeftMoves.add(validMove);
-            } else {
-                break;
+        this.notAPieceInProposedPos = true;
+        this.currentlyProposedRow = this.currentRow;
+        this.currentlyProposedCol = this.currentCol;
+
+        while ((currentlyProposedRow < 8 & currentlyProposedCol < 8) && notAPieceInProposedPos) {
+            validMoveHelper(1, 1, board, myPosition);
+        }
+
+        this.notAPieceInProposedPos = true;
+        this.currentlyProposedRow = this.currentRow;
+        this.currentlyProposedCol = this.currentCol;
+
+        while ((currentlyProposedRow > 1 & currentlyProposedCol < 8) && notAPieceInProposedPos) {
+            validMoveHelper(-1, 1, board, myPosition);
+        }
+
+        this.notAPieceInProposedPos = true;
+        this.currentlyProposedRow = this.currentRow;
+        this.currentlyProposedCol = this.currentCol;
+
+        while ((currentlyProposedRow > 1 & currentlyProposedCol > 1) && notAPieceInProposedPos) {
+            validMoveHelper(-1, -1, board, myPosition);
+        }
+
+        this.notAPieceInProposedPos = true;
+        this.currentlyProposedRow = this.currentRow;
+        this.currentlyProposedCol = this.currentCol;
+
+        while ((currentlyProposedRow < 8 & currentlyProposedCol > 1) && notAPieceInProposedPos) {
+            validMoveHelper(1, -1, board, myPosition);
+        }
+
+        return this.moves;
+    }
+
+    private void resetProposedPos() {
+        this.currentlyProposedRow = this.currentRow;
+        this.currentlyProposedCol = this.currentCol;
+        this.notAPieceInProposedPos = true;
+    }
+
+    private void validMoveHelper(int incrementRowBy, int incrementColBy, ChessBoard board, ChessPosition myPosition) {
+
+        this.currentlyProposedRow += incrementRowBy;
+        this.currentlyProposedCol += incrementColBy;
+        ChessPosition proposedPosition = new ChessPosition(currentlyProposedRow, currentlyProposedCol);
+        ChessMove proposedMove = new ChessMove(myPosition, proposedPosition, null);
+
+        ChessPiece pieceInProposedMove = board.getPiece(proposedPosition);
+
+        if (pieceInProposedMove != null) {
+            this.notAPieceInProposedPos = false;
+            ChessGame.TeamColor currentPieceColor = board.getPiece(myPosition).getTeamColor();
+            ChessGame.TeamColor otherChessPieceColor = pieceInProposedMove.getTeamColor();
+
+            if (currentPieceColor == otherChessPieceColor) {
+                return;
             }
         }
 
-        return forwardLeftMoves;
-    }
-
-    public static Set<ChessMove> seeForwardRight(ChessBoard board, ChessPosition position) {
-        Set<ChessMove> forwardRightMoves = new HashSet<>();
-        int row = position.getRow();
-        int col = position.getColumn();;
-        canKeepGoing = true;
-
-        while (row < 8 && col < 8 && canKeepGoing) {
-            row++;
-            col++;
-            ChessMove validMove = validMoveHelper(row,col,board,position);
-
-            if (validMove != null) {
-                forwardRightMoves.add(validMove);
-            } else {
-                break;
-            }
-        }
-
-        return forwardRightMoves;
-    }
-
-    public static Set<ChessMove> seeDownLeft(ChessBoard board, ChessPosition position) {
-        Set<ChessMove> downLeftMoves = new HashSet<>();
-        int row = position.getRow();
-        int col = position.getColumn();;
-        canKeepGoing = true;
-
-        while (row > 1 && col > 1 && canKeepGoing) {
-            row--;
-            col--;
-            ChessMove validMove = validMoveHelper(row,col,board,position);
-
-            if (validMove != null) {
-                downLeftMoves.add(validMove);
-            } else {
-                break;
-            }
-        }
-
-        return downLeftMoves;
-    }
-
-    static boolean canKeepGoing = true;
-
-    public static Set<ChessMove> seeDownRight(ChessBoard board, ChessPosition position) {
-        Set<ChessMove> downRightMoves = new HashSet<>();
-        int row = position.getRow();
-        int col = position.getColumn();;
-        canKeepGoing = true;
-
-        while (row > 1 && col < 8 && canKeepGoing) {
-            row--;
-            col++;
-            ChessMove validMove = validMoveHelper(row,col,board,position);
-
-            if (validMove != null) {
-                downRightMoves.add(validMove);
-            } else {
-                break;
-            }
-        }
-
-        return downRightMoves;
-    }
-
-    public static ChessMove validMoveHelper(int row, int col, ChessBoard board, ChessPosition myPosition) {
-
-        ChessPosition proposedPosition = new ChessPosition(row, col);
-
-        if (board.getPiece(proposedPosition) != null) {
-            ChessPiece myPiece = board.getPiece(myPosition);
-            if (myPiece.getTeamColor() == board.getPiece(proposedPosition).getTeamColor()){
-                return null;
-            } else {
-                canKeepGoing = false;
-                return new ChessMove(myPosition, proposedPosition, null);
-            }
-        } else {
-            return new ChessMove(myPosition, proposedPosition, null);
-        }
+        this.moves.add(proposedMove);
     }
 }
