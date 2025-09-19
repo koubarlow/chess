@@ -1,15 +1,9 @@
 package chess.validPieceMoves;
 
 import chess.*;
-
-import javax.sound.midi.SysexMessage;
 import java.util.*;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-public class BishopValidMoves {
-
-    private final Set<ChessMove> moves;
+public class BishopValidMoves extends ValidMoves {
 
     private int currentRow;
     private int currentCol;
@@ -17,10 +11,6 @@ public class BishopValidMoves {
     private int currentlyProposedRow;
     private int currentlyProposedCol;
     private boolean notAPieceInProposedPos;
-
-    public BishopValidMoves() {
-        this.moves = new HashSet<>();
-    }
 
     public Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition) {
 

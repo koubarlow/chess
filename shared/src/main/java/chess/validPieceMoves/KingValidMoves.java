@@ -9,13 +9,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-public class KingValidMoves {
-
-    Set<ChessMove> moves;
-
-    public KingValidMoves() {
-        this.moves = new HashSet<>();
-    }
+public class KingValidMoves extends ValidMoves {
 
     public Set<ChessMove> pieceMoves(ChessBoard board, ChessPosition myPosition)
     {

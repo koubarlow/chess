@@ -2,8 +2,12 @@ package chess;
 
 import chess.validPieceMoves.BishopValidMoves;
 import chess.validPieceMoves.KingValidMoves;
+import chess.validPieceMoves.KnightValidMoves;
+import chess.validPieceMoves.RookValidMoves;
 
 import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 /**
  * Represents a single chess piece
@@ -88,16 +92,19 @@ public class ChessPiece {
         switch (type) {
             case BISHOP:
                 BishopValidMoves bishopVM = new BishopValidMoves();
-                System.out.println("my boi:" + bishopVM.pieceMoves(board, myPosition));
                 return bishopVM.pieceMoves(board, myPosition);
             case QUEEN:
-                break;
+                BishopValidMoves queenDiagonalVM = new BishopValidMoves();
+                RookValidMoves queenRookVm = new RookValidMoves();
+                return Stream.concat(queenDiagonalVM.pieceMoves(board, myPosition).stream(), queenRookVm.pieceMoves(board, myPosition).stream()).collect(Collectors.toSet());
             case PAWN:
                 break;
             case ROOK:
-                break;
+                RookValidMoves rookVM = new RookValidMoves();
+                return rookVM.pieceMoves(board, myPosition);
             case KNIGHT:
-                break;
+                KnightValidMoves knightVM = new KnightValidMoves();
+                return knightVM.pieceMoves(board, myPosition);
             case KING:
                 KingValidMoves kingVM = new KingValidMoves();
                 return kingVM.pieceMoves(board, myPosition);
