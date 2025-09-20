@@ -1,9 +1,6 @@
 package chess;
 
-import chess.validPieceMoves.BishopValidMoves;
-import chess.validPieceMoves.KingValidMoves;
-import chess.validPieceMoves.KnightValidMoves;
-import chess.validPieceMoves.RookValidMoves;
+import chess.validPieceMoves.*;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -98,7 +95,8 @@ public class ChessPiece {
                 RookValidMoves queenRookVm = new RookValidMoves();
                 return Stream.concat(queenDiagonalVM.pieceMoves(board, myPosition).stream(), queenRookVm.pieceMoves(board, myPosition).stream()).collect(Collectors.toSet());
             case PAWN:
-                break;
+                PawnValidMoves pawnVM = new PawnValidMoves();
+                return pawnVM.pieceMoves(board, myPosition);
             case ROOK:
                 RookValidMoves rookVM = new RookValidMoves();
                 return rookVM.pieceMoves(board, myPosition);

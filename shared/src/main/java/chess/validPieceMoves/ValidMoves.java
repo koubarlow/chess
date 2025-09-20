@@ -25,6 +25,9 @@ public class ValidMoves {
         ChessMove propMove = new ChessMove(myPos, propPos,null);
         ChessPiece pieceInPropMove = board.getPiece(propPos);
 
+        System.out.println(propMove);
+        System.out.println(pieceInPropMove);
+
         if (pieceInPropMove != null) {
             ChessPiece myPiece = board.getPiece(myPos);
             if (myPiece.getTeamColor() == pieceInPropMove.getTeamColor()){

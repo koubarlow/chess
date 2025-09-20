@@ -26,10 +26,12 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        int row = position.getRow() - 1;
-        int col = position.getColumn() - 1;
-        this.board[row][col] = piece;
-        piece.setPosition(position);
+        if (piece != null) {
+            int row = position.getRow() - 1;
+            int col = position.getColumn() - 1;
+            this.board[row][col] = piece;
+            piece.setPosition(position);
+        }
     }
 
     /**

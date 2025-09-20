@@ -43,23 +43,4 @@ public class KingValidMoves extends ValidMoves {
 
         return moves;
     }
-
-    public void addIfValid(ChessBoard board, ChessPosition myPos, ChessPosition propPos) {
-
-        int propRow = propPos.getRow();
-        int propCol = propPos.getColumn();
-        if (propRow > 8 || propCol > 8 || propRow < 1 || propCol < 1) { return; }
-
-        ChessMove propMove = new ChessMove(myPos, propPos,null);
-        ChessPiece pieceInPropMove = board.getPiece(propPos);
-
-        if (pieceInPropMove != null) {
-            ChessPiece myPiece = board.getPiece(myPos);
-            if (myPiece.getTeamColor() == pieceInPropMove.getTeamColor()){
-                return;
-            }
-        }
-
-        this.moves.add(propMove);
-    }
 }
