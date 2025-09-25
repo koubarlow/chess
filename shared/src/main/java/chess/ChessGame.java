@@ -10,19 +10,17 @@ import java.util.Collection;
  */
 public class ChessGame {
 
-    private TeamColor teamTurn;
-    private ChessBoard chessBoard;
+    private ChessBoard board;
 
     public ChessGame() {
-        this.setTeamTurn(TeamColor.WHITE);
-        this.setBoard(new ChessBoard());
+        this.board = new ChessBoard();
     }
 
     /**
      * @return Which team's turn it is
      */
     public TeamColor getTeamTurn() {
-        return this.teamTurn;
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -31,7 +29,7 @@ public class ChessGame {
      * @param team the team whose turn it is
      */
     public void setTeamTurn(TeamColor team) {
-        this.teamTurn = team;
+        throw new RuntimeException("Not implemented");
     }
 
     /**
@@ -51,7 +49,6 @@ public class ChessGame {
      */
     public Collection<ChessMove> validMoves(ChessPosition startPosition) {
         throw new RuntimeException("Not implemented");
-        // get what is at that position
     }
 
     /**
@@ -101,7 +98,7 @@ public class ChessGame {
      * @param board the new board to use
      */
     public void setBoard(ChessBoard board) {
-        this.chessBoard = board;
+        this.board = board;
     }
 
     /**
@@ -110,14 +107,13 @@ public class ChessGame {
      * @return the chessboard
      */
     public ChessBoard getBoard() {
-        return this.chessBoard;
+        return this.board;
     }
 
     @Override
     public String toString() {
         return "ChessGame{" +
-                "teamTurn=" + teamTurn +
-                ", chessBoard=" + chessBoard +
+                "board=" + board +
                 '}';
     }
 }

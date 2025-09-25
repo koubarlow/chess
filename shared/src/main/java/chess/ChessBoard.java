@@ -1,9 +1,8 @@
 package chess;
 
 import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A chessboard that can hold and rearrange chess pieces.
@@ -13,7 +12,7 @@ import java.util.Objects;
  */
 public class ChessBoard {
 
-    ChessPiece[][] board;
+    private final ChessPiece[][] board;
 
     public ChessBoard() {
         this.board = new ChessPiece[8][8];
@@ -26,12 +25,11 @@ public class ChessBoard {
      * @param piece    the piece to add
      */
     public void addPiece(ChessPosition position, ChessPiece piece) {
-        if (piece != null) {
-            int row = position.getRow() - 1;
-            int col = position.getColumn() - 1;
-            this.board[row][col] = piece;
-            piece.setPosition(position);
-        }
+        if (piece == null) { return; }
+        int row = position.getRow() - 1;
+        int col = position.getColumn() - 1;
+        this.board[row][col] = piece;
+        piece.setPosition(position);
     }
 
     /**
@@ -52,23 +50,27 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
-        this.board = new ChessPiece[8][8];
-        resetPieces(1, 2, ChessGame.TeamColor.WHITE);
-        resetPieces(8, 7, ChessGame.TeamColor.BLACK);
+        addPawns(2, ChessGame.TeamColor.WHITE);
+        addPawns(7, ChessGame.TeamColor.BLACK);
+        addSpecialPieces(1, ChessGame.TeamColor.WHITE);
+        addSpecialPieces(8, ChessGame.TeamColor.BLACK);
     }
 
-    private void resetPieces(int rowForSpecialPieces, int rowForPawns, ChessGame.TeamColor teamColor) {
-        addPiece(new ChessPosition(rowForSpecialPieces,1), new ChessPiece(teamColor, ChessPiece.PieceType.ROOK));
-        addPiece(new ChessPosition(rowForSpecialPieces,2), new ChessPiece(teamColor, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(rowForSpecialPieces,3), new ChessPiece(teamColor, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(rowForSpecialPieces,4), new ChessPiece(teamColor, ChessPiece.PieceType.QUEEN));
-        addPiece(new ChessPosition(rowForSpecialPieces,5), new ChessPiece(teamColor, ChessPiece.PieceType.KING));
-        addPiece(new ChessPosition(rowForSpecialPieces,6), new ChessPiece(teamColor, ChessPiece.PieceType.BISHOP));
-        addPiece(new ChessPosition(rowForSpecialPieces,7), new ChessPiece(teamColor, ChessPiece.PieceType.KNIGHT));
-        addPiece(new ChessPosition(rowForSpecialPieces,8), new ChessPiece(teamColor, ChessPiece.PieceType.ROOK));
+    private void addSpecialPieces(int row, ChessGame.TeamColor team) {
+        ChessPiece.PieceType[] pieces = {ChessPiece.PieceType.ROOK, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.QUEEN, ChessPiece.PieceType.KING, ChessPiece.PieceType.BISHOP, ChessPiece.PieceType.KNIGHT, ChessPiece.PieceType.ROOK};
 
-        for (int i = 1; i < 9; i++) {
-            addPiece(new ChessPosition(rowForPawns,i), new ChessPiece(teamColor, ChessPiece.PieceType.PAWN));
+        for (int col = 1; col < 9; col++) {
+            ChessPiece newSpecialPiece = new ChessPiece(team, pieces[col - 1]);
+            ChessPosition newPos = new ChessPosition(row, col);
+            addPiece(newPos, newSpecialPiece);
+        }
+    }
+
+    private void addPawns(int row, ChessGame.TeamColor team) {
+        for (int col = 1; col < 9; col++) {
+            ChessPiece newPawn = new ChessPiece(team, ChessPiece.PieceType.PAWN);
+            ChessPosition newPos = new ChessPosition(row, col);
+            addPiece(newPos, newPawn);
         }
     }
 
