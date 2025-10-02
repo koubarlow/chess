@@ -24,8 +24,6 @@ public class ValidMoves {
 
     public boolean addIfValid(ChessPosition propPos) {
 
-        System.out.println(myPos + "->" + propPos);
-
         int propRow = propPos.getRow();
         int propCol = propPos.getColumn();
 

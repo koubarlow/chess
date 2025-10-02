@@ -43,6 +43,30 @@ public class ChessBoard {
         return this.board[row][col];
     }
 
+    public boolean setNewPosition(ChessPosition curPos, ChessPosition newPos, ChessGame game, boolean actuallyMakeMove) {
+        ChessPiece pieceInCurPos = getPiece(curPos);
+        ChessPiece ogPiece = getPiece(newPos);
+
+        this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = null;
+        this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = pieceInCurPos;
+
+        if (game.isInCheck(pieceInCurPos.getTeamColor())) {
+            this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = pieceInCurPos;
+            this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = ogPiece;
+
+            return false;
+        }
+
+        if (!actuallyMakeMove) {
+            this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = pieceInCurPos;
+            this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = ogPiece;
+        } else {
+            pieceInCurPos.setPosition(newPos);
+        }
+
+        return true;
+    }
+
     public Collection<ChessPiece> getAllPiecesFromBoard() {
         ArrayList<ChessPiece> pieces = new ArrayList<>();
         for (ChessPiece[] row : board) {

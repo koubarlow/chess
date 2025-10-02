@@ -15,7 +15,7 @@ import java.util.stream.Stream;
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
-    private final ChessPiece.PieceType type;
+    private ChessPiece.PieceType type;
     private ChessPosition currentPosition;
 
     public ChessPiece(ChessGame.TeamColor pieceColor, ChessPiece.PieceType type) {
@@ -55,6 +55,10 @@ public class ChessPiece {
 
     public void setPosition(ChessPosition pos) {
         this.currentPosition = pos;
+    }
+
+    public void setPieceType(PieceType pieceType) {
+        this.type = pieceType;
     }
 
     /**
