@@ -10,7 +10,7 @@ import java.util.*;
  */
 public class ChessBoard {
 
-    private final ChessPiece[][] board;
+    private ChessPiece[][] board;
 
     public ChessBoard() {
         this.board = new ChessPiece[8][8];
@@ -47,19 +47,40 @@ public class ChessBoard {
         ChessPiece pieceInCurPos = getPiece(curPos);
         ChessPiece ogPiece = getPiece(newPos);
 
+        System.out.println(pieceInCurPos.getPieceType() + ":" + curPos + " -> " + newPos);
+//
+//        Collection<ChessMove> potentialOpponentMoves = game.potentialMovesForTeam(this, pieceInCurPos.getTeamColor(), true);
+//        Collection<ChessPiece> allPieces = this.getAllPiecesFromBoard();
+//        ChessPiece myKing = null;
+//
+//        for (ChessPiece piece : allPieces) {
+//            if (piece.getTeamColor() == pieceInCurPos.getTeamColor() && piece.getPieceType() == ChessPiece.PieceType.KING) {
+//                myKing = piece;
+//            }
+//        }
+//
+//        for (ChessMove potentialOpponentMove : potentialOpponentMoves) {
+//            if (potentialOpponentMove.getEndPosition().getRow() == myKing.getCurrentPosition().getRow() && potentialOpponentMove.getEndPosition().getColumn() == myKing.getCurrentPosition().getColumn()) {
+//                System.out.println("King would be in check");
+//            }
+//        }
+
         this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = null;
         this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = pieceInCurPos;
+        pieceInCurPos.setPosition(newPos);
 
         if (game.isInCheck(pieceInCurPos.getTeamColor())) {
+            System.out.println("King would be in check");
             this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = pieceInCurPos;
             this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = ogPiece;
-
+            pieceInCurPos.setPosition(curPos);
             return false;
         }
 
         if (!actuallyMakeMove) {
             this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = pieceInCurPos;
             this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = ogPiece;
+            pieceInCurPos.setPosition(curPos);
         } else {
             pieceInCurPos.setPosition(newPos);
         }
@@ -84,6 +105,7 @@ public class ChessBoard {
      * (How the game of chess normally starts)
      */
     public void resetBoard() {
+        this.board = new ChessPiece[8][8];
         addPawns(2, ChessGame.TeamColor.WHITE);
         addPawns(7, ChessGame.TeamColor.BLACK);
         addSpecialPieces(1, ChessGame.TeamColor.WHITE);

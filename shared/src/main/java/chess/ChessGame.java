@@ -17,6 +17,7 @@ public class ChessGame {
 
     public ChessGame() {
         this.board = new ChessBoard();
+        board.resetBoard();
         this.setTeamTurn(TeamColor.WHITE);
     }
 
@@ -55,12 +56,7 @@ public class ChessGame {
         ChessPiece piece = board.getPiece(startPosition);
         Collection<ChessMove> potentialMoves = piece.pieceMoves(board, startPosition);
 
-//        for (ChessMove potentialMove : potentialMoves) {
-//            if (!this.board.setNewPosition(startPosition, potentialMove.getEndPosition(), this, false)) {
-//                potentialMoves.remove(potentialMove);
-//            }
-//        }
-
+        potentialMoves.removeIf(potentialMove -> !this.board.setNewPosition(startPosition, potentialMove.getEndPosition(), this, false));
         return potentialMoves;
     }
 
@@ -80,7 +76,7 @@ public class ChessGame {
             throw new InvalidMoveException("Piece not found!");
         }
 
-        Collection<ChessMove> potentialMoves = validMoves(move.getStartPosition());
+        Collection<ChessMove> potentialMoves = pieceToMove.pieceMoves(this.board, move.getStartPosition());
 
         if (pieceToMove.getTeamColor() != getTeamTurn()) {
             throw new InvalidMoveException("Not this team's turn!");
@@ -121,22 +117,34 @@ public class ChessGame {
         return this.kingIsInDangerWith(this.board, teamColor);
     }
 
-    private boolean kingIsInDangerWith(ChessBoard board, TeamColor teamColor) {
-
+    public Collection<ChessMove> potentialMovesForTeam(ChessBoard board, TeamColor teamColor, boolean oppositeTeam) {
+        Set<ChessMove> potentialMoves = new HashSet<>();
         Collection<ChessPiece> allPieces = board.getAllPiecesFromBoard();
-        Set<ChessMove> potentialOpponentMoves = new HashSet<>();
-        ChessPiece myKing = null;
-        TeamColor opposingColor = TeamColor.BLACK;
-
-        if (teamColor == TeamColor.BLACK) {
-            opposingColor = TeamColor.WHITE;
+        if (oppositeTeam) {
+            if (teamColor == TeamColor.BLACK) {
+                teamColor = TeamColor.WHITE;
+            } else {
+                teamColor = TeamColor.BLACK;
+            }
         }
 
         for (ChessPiece piece : allPieces) {
-            if (piece.getTeamColor() == opposingColor) {
-                potentialOpponentMoves = Stream.concat(potentialOpponentMoves.stream(), this.validMoves(piece.getCurrentPosition()).stream()).collect(Collectors.toSet());
+            if (piece.getTeamColor() == teamColor) {
+                potentialMoves = Stream.concat(potentialMoves.stream(), piece.pieceMoves(board, piece.getCurrentPosition()).stream()).collect(Collectors.toSet());
             }
+        }
 
+        return potentialMoves;
+    }
+
+    private boolean kingIsInDangerWith(ChessBoard board, TeamColor teamColor) {
+
+        Collection<ChessPiece> allPieces = board.getAllPiecesFromBoard();
+        Collection<ChessMove> potentialOpponentMoves = potentialMovesForTeam(board, teamColor, true);
+
+        ChessPiece myKing = null;
+
+        for (ChessPiece piece : allPieces) {
             if (piece.getTeamColor() == teamColor && piece.getPieceType() == ChessPiece.PieceType.KING) {
                 myKing = piece;
             }
@@ -162,41 +170,16 @@ public class ChessGame {
         // 1. Is in check
         // 2. All king's valid moves will put him in check
 
-        ChessPiece myKing = null;
-        Collection<ChessPiece> allPieces = this.board.getAllPiecesFromBoard();
-        Set<ChessMove> potentialOpponentMoves = new HashSet<>();
-        TeamColor opposingColor = TeamColor.BLACK;
-
-        if (teamColor == TeamColor.BLACK) {
-            opposingColor = TeamColor.WHITE;
-        }
-
-        for (ChessPiece piece : allPieces) {
-            if (piece.getTeamColor() == opposingColor) {
-                potentialOpponentMoves = Stream.concat(potentialOpponentMoves.stream(), this.validMoves(piece.getCurrentPosition()).stream()).collect(Collectors.toSet());
-            }
-
-            if (piece.getTeamColor() == teamColor && piece.getPieceType() == ChessPiece.PieceType.KING) {
-                myKing = piece;
+        Collection<ChessMove> potentialMovesForTeam = potentialMovesForTeam(this.board, teamColor, false);
+        boolean canMove = false;
+        for (ChessMove potentialMove : potentialMovesForTeam) {
+            boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potentialMove.getStartPosition(), potentialMove.getEndPosition(), this, false);
+            if (canSetNewPosWithoutKingBeingInDanger) {
+                canMove = true;
             }
         }
 
-        if (myKing == null) { return false; }
-
-        Collection<ChessMove> kingValidMoves = validMoves(myKing.getCurrentPosition());
-
-        boolean wouldBeInCheckIfMovedAnywhere = true;
-
-        for (ChessMove kingMove : kingValidMoves) {
-            for (ChessMove opponentMove : potentialOpponentMoves) {
-                if (kingMove.getEndPosition().getRow() != opponentMove.getEndPosition().getRow() || kingMove.getEndPosition().getColumn() != opponentMove.getEndPosition().getColumn()) {
-                    wouldBeInCheckIfMovedAnywhere = false;
-                    break;
-                }
-            }
-        }
-
-        return this.isInCheck(teamColor) && wouldBeInCheckIfMovedAnywhere;
+        return isInCheck(teamColor) && !canMove;
     }
 
     /**
@@ -207,9 +190,18 @@ public class ChessGame {
      * @return True if the specified team is in stalemate, otherwise false
      */
     public boolean isInStalemate(TeamColor teamColor) {
-        throw new RuntimeException("Not implemented");
         // 1. For the current team's turn, there is no valid moves -
         // (King is not in check but will be if he moves, and no valid moves from other pieces of our color)
+        Collection<ChessMove> potentialMovesForTeam = potentialMovesForTeam(this.board, teamColor, false);
+        boolean canMove = false;
+        for (ChessMove potentialMove : potentialMovesForTeam) {
+            boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potentialMove.getStartPosition(), potentialMove.getEndPosition(), this, false);
+            if (canSetNewPosWithoutKingBeingInDanger) {
+                canMove = true;
+            }
+        }
+
+        return !isInCheck(teamColor) && !canMove;
     }
 
     /**
