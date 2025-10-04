@@ -179,7 +179,7 @@ public class ChessGame {
             }
         }
 
-        return isInCheck(teamColor) && !canMove;
+        return isInCheck(teamColor) && !canMove(teamColor);
     }
 
     /**
@@ -192,18 +192,21 @@ public class ChessGame {
     public boolean isInStalemate(TeamColor teamColor) {
         // 1. For the current team's turn, there is no valid moves -
         // (King is not in check but will be if he moves, and no valid moves from other pieces of our color)
+
+        return !isInCheck(teamColor) && !canMove(teamColor);
+    }
+
+    private boolean canMove(TeamColor teamColor) {
         Collection<ChessMove> potentialMovesForTeam = potentialMovesForTeam(this.board, teamColor, false);
-        boolean canMove = false;
         for (ChessMove potentialMove : potentialMovesForTeam) {
             boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potentialMove.getStartPosition(), potentialMove.getEndPosition(), this, false);
             if (canSetNewPosWithoutKingBeingInDanger) {
-                canMove = true;
+                return true;
             }
         }
 
-        return !isInCheck(teamColor) && !canMove;
+        return false;
     }
-
     /**
      * Sets this game's chessboard with a given board
      *
