@@ -170,15 +170,6 @@ public class ChessGame {
         // 1. Is in check
         // 2. All king's valid moves will put him in check
 
-        Collection<ChessMove> potentialMovesForTeam = potentialMovesForTeam(this.board, teamColor, false);
-        boolean canMove = false;
-        for (ChessMove potentialMove : potentialMovesForTeam) {
-            boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potentialMove.getStartPosition(), potentialMove.getEndPosition(), this, false);
-            if (canSetNewPosWithoutKingBeingInDanger) {
-                canMove = true;
-            }
-        }
-
         return isInCheck(teamColor) && !canMove(teamColor);
     }
 
