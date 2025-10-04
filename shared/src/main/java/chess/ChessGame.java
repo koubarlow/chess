@@ -137,7 +137,7 @@ public class ChessGame {
         return potentialMoves;
     }
 
-    private boolean kingIsInDangerWith(ChessBoard board, TeamColor teamColor) {
+    public boolean kingIsInDangerWith(ChessBoard board, TeamColor teamColor) {
 
         Collection<ChessPiece> allPieces = board.getAllPiecesFromBoard();
         Collection<ChessMove> potentialOpponentMoves = potentialMovesForTeam(board, teamColor, true);
