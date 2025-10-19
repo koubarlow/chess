@@ -11,4 +11,6 @@ public class UserDAO extends BaseDAO {
     //    Failure response	[400] { "message": "Error: bad request" }
     //    Failure response	[403] { "message": "Error: already taken" }
     //    Failure response	[500] { "message": "Error: (description of error)" }
+
+    // GetUser -> Returns UserData by given username
 }
