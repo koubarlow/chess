@@ -1,14 +1,26 @@
 package service;
 
-import model.AuthData;
-import model.LoginRequest;
-import model.LogoutRequest;
-import model.RegisterRequest;
+import dataaccess.DataAccessException;
+import dataaccess.UserDAO;
+import model.*;
 
 public class UserService {
-    public AuthData register(RegisterRequest registerRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
+
+    private final UserDAO userDAO;
+
+    public UserService(UserDAO userDAO) {
+        this.userDAO = userDAO;
     }
+
+    public UserData register(RegisterRequest registerRequest) throws DataAccessException {
+        UserData userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+        return this.userDAO.createUser(userData);
+    }
+
+    public UserData getUser(String username) throws DataAccessException {
+        return this.userDAO.getUser(username);
+    }
+
     public AuthData login(LoginRequest loginRequest) {
         throw new UnsupportedOperationException("Not implemented yet");
     }

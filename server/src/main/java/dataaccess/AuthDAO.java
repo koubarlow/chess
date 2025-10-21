@@ -1,6 +1,8 @@
 package dataaccess;
 
-public class AuthDAO extends BaseDAO {
+import model.AuthData;
+
+public interface AuthDAO {
     // 'session' endpoint
     // Login (POST), Logout (DELETE)
 
@@ -26,4 +28,5 @@ public class AuthDAO extends BaseDAO {
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
     // GetAuth -> Returns AuthData by authToken
+    AuthData createAuth(String authData) throws DataAccessException;
 }

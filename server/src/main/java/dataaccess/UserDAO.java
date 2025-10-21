@@ -1,6 +1,9 @@
 package dataaccess;
 
-public class UserDAO extends BaseDAO {
+import model.AuthData;
+import model.UserData;
+
+public interface UserDAO {
     // Register (POST)
     //
     //    Description	Register a new user.
@@ -13,4 +16,8 @@ public class UserDAO extends BaseDAO {
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
     // GetUser -> Returns UserData by given username
+
+    UserData getUser(String username) throws DataAccessException;
+
+    UserData createUser(UserData userData) throws DataAccessException;
 }
