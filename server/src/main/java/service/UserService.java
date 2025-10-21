@@ -13,16 +13,22 @@ public class UserService {
     }
 
     public UserData register(RegisterRequest registerRequest) throws DataAccessException {
-        UserData userData = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
-        return this.userDAO.createUser(userData);
+        UserData user = this.getUser(registerRequest.username());
+
+        if (user == null) {
+            user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
+            return this.userDAO.createUser(user);
+        }
+        throw new DataAccessException("Username already taken");
     }
 
     public UserData getUser(String username) throws DataAccessException {
         return this.userDAO.getUser(username);
     }
 
+    // MAKE AUTH SERVICE
     public AuthData login(LoginRequest loginRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
+
     }
     public void logout(LogoutRequest logoutRequest) {
         throw new UnsupportedOperationException("Not implemented yet");
