@@ -1,6 +1,8 @@
 package dataaccess;
 
-public class GameDAO extends BaseDAO {
+import model.*;
+
+public interface GameDAO {
     // 'game' endpoint
     // Create Game (POST), Join Game (PUT), List Game (GET)
     //
@@ -40,4 +42,10 @@ public class GameDAO extends BaseDAO {
     //    Failure response	[401] { "message": "Error: unauthorized" }
     //    Failure response	[403] { "message": "Error: already taken" }
     //    Failure response	[500] { "message": "Error: (description of error)" }
+
+    GameList listGames() throws DataAccessException;
+
+    GameData createGame(CreateGameRequest createGameRequest) throws DataAccessException;
+
+    void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException;
 }
