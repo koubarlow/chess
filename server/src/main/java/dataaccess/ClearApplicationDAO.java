@@ -1,6 +1,6 @@
 package dataaccess;
 
-public class ClearApplicationDAO extends BaseDAO {
+public interface ClearApplicationDAO extends BaseDAO {
     // 'db' endpoint
 
     //    Clear application
