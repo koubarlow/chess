@@ -48,4 +48,6 @@ public interface GameDAO extends BaseDAO {
     GameData createGame(CreateGameRequest createGameRequest) throws DataAccessException;
 
     void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException;
+
+    void clearGames() throws DataAccessException;
 }

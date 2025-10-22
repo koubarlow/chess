@@ -47,4 +47,8 @@ public class MemoryGameDAO implements GameDAO {
         GameData updatedGame = new GameData(joinGameRequest.gameID(), whiteUsername, blackUsername, gameName, chessGame);
         games.put(gameId, updatedGame);
     }
+
+    public void clearGames() {
+        this.games.clear();
+    }
 }

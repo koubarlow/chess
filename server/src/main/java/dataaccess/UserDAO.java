@@ -3,6 +3,8 @@ package dataaccess;
 import model.AuthData;
 import model.UserData;
 
+import javax.xml.crypto.Data;
+
 public interface UserDAO extends BaseDAO {
     // Register (POST)
     //
@@ -20,4 +22,6 @@ public interface UserDAO extends BaseDAO {
     UserData getUser(String username) throws DataAccessException;
 
     UserData createUser(UserData userData) throws DataAccessException;
+
+    void clearUsers() throws DataAccessException;
 }

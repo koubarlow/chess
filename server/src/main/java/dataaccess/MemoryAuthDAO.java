@@ -54,4 +54,8 @@ public class MemoryAuthDAO implements AuthDAO {
         }
         throw new DataAccessException("Already logged out");
     }
+
+    public void clearSessions() throws DataAccessException {
+        this.sessions.clear();
+    }
 }
