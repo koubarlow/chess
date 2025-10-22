@@ -38,4 +38,5 @@ public interface AuthDAO {
     AuthData login(LoginRequest loginRequest) throws DataAccessException;
     boolean sessionExistsFor(String username);
     boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws DataAccessException;
+    void logout(String authToken) throws DataAccessException;
 }

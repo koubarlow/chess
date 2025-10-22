@@ -5,6 +5,7 @@ import model.LoginRequest;
 import model.UserData;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO {
@@ -19,14 +20,19 @@ public class MemoryAuthDAO implements AuthDAO {
     public AuthData login(LoginRequest loginRequest) throws DataAccessException {
         if (usernameAndPasswordMatch(loginRequest) && !(sessionExistsFor(loginRequest.username()))) {
             AuthData authData = new AuthData(AuthDAO.generateToken(), loginRequest.username());
-            this.sessions.put(authData.username(), authData.authToken());
+            this.sessions.put(authData.authToken(), authData.username());
             return authData;
         }
         return null;
     }
 
     public boolean sessionExistsFor(String username) {
-        return sessions.get(username) != null;
+        for (Map.Entry<String, String> session: sessions.entrySet()) {
+            if (Objects.equals(username, session.getValue())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public boolean usernameAndPasswordMatch(LoginRequest request) throws DataAccessException {
@@ -35,5 +41,13 @@ public class MemoryAuthDAO implements AuthDAO {
         UserData user = userDAO.getUser(username);
 
         return Objects.equals(user.username(), username) && Objects.equals(user.password(), password);
+    }
+
+    public void logout(String authToken) throws DataAccessException {
+        if (sessions.get(authToken) != null) {
+            sessions.remove(authToken);
+            return;
+        }
+        throw new DataAccessException("Already logged out");
     }
 }

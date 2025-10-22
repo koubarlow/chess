@@ -2,10 +2,7 @@ package service;
 
 import dataaccess.AuthDAO;
 import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
 import model.*;
-
-import java.util.UUID;
 
 public class AuthService {
 
@@ -19,7 +16,7 @@ public class AuthService {
         return this.authDAO.login(loginRequest);
     }
 
-    public void logout(LogoutRequest logoutRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
+    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+        this.authDAO.logout(logoutRequest.authToken());
     }
 }
