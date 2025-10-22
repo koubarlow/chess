@@ -25,12 +25,4 @@ public class UserService {
     public UserData getUser(String username) throws DataAccessException {
         return this.userDAO.getUser(username);
     }
-
-    // MAKE AUTH SERVICE
-    public AuthData login(LoginRequest loginRequest) {
-
-    }
-    public void logout(LogoutRequest logoutRequest) {
-        throw new UnsupportedOperationException("Not implemented yet");
-    }
 }

@@ -1,6 +1,9 @@
 package dataaccess;
 
 import model.AuthData;
+import model.LoginRequest;
+
+import java.util.UUID;
 
 public interface AuthDAO {
     // 'session' endpoint
@@ -27,6 +30,12 @@ public interface AuthDAO {
     //    Failure response	[401] { "message": "Error: unauthorized" }
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
+    static String generateToken() {
+        return UUID.randomUUID().toString();
+    }
+
     // GetAuth -> Returns AuthData by authToken
-    AuthData createAuth(String authData) throws DataAccessException;
+    AuthData login(LoginRequest loginRequest) throws DataAccessException;
+    boolean sessionExistsFor(String username);
+    boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws DataAccessException;
 }

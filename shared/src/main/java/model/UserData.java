@@ -8,8 +8,8 @@ public record UserData(String username, String password, String email) {
 
     public UserData {
         Objects.requireNonNull(username, "username cannot be empty");
-        Objects.requireNonNull(password, "username cannot be empty");
-        Objects.requireNonNull(email, "username cannot be empty");
+        Objects.requireNonNull(password, "password cannot be empty");
+        Objects.requireNonNull(email, "email cannot be empty");
     }
 
     public String toString() {

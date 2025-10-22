@@ -18,7 +18,7 @@ public class SessionServerHelper {
 
     public void login(Context context) throws DataAccessException {
         LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
-        UserData user = .register(registerRequest);
+        UserData user = userService.login(loginRequest);
         context.json(new Gson().toJson(user));
     }
 
