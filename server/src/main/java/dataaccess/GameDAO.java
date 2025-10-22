@@ -2,7 +2,7 @@ package dataaccess;
 
 import model.*;
 
-public interface GameDAO {
+public interface GameDAO extends BaseDAO {
     // 'game' endpoint
     // Create Game (POST), Join Game (PUT), List Game (GET)
     //

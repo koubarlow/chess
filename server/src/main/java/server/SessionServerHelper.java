@@ -8,10 +8,9 @@ import model.*;
 import service.AuthService;
 import service.UserService;
 
-public class SessionServerHelper {
+public class SessionServerHelper extends Server {
 
     private final AuthService authService;
-    private final String AUTH_TOKEN_HEADER = "authorization";
 
     public SessionServerHelper(AuthService authService) {
         this.authService = authService;

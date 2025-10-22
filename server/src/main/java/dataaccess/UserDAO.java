@@ -3,7 +3,7 @@ package dataaccess;
 import model.AuthData;
 import model.UserData;
 
-public interface UserDAO {
+public interface UserDAO extends BaseDAO {
     // Register (POST)
     //
     //    Description	Register a new user.

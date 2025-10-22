@@ -5,7 +5,7 @@ import model.LoginRequest;
 
 import java.util.UUID;
 
-public interface AuthDAO {
+public interface AuthDAO extends BaseDAO {
     // 'session' endpoint
     // Login (POST), Logout (DELETE)
 
@@ -30,13 +30,10 @@ public interface AuthDAO {
     //    Failure response	[401] { "message": "Error: unauthorized" }
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
-    static String generateToken() {
-        return UUID.randomUUID().toString();
-    }
-
     // GetAuth -> Returns AuthData by authToken
     AuthData login(LoginRequest loginRequest) throws DataAccessException;
     boolean sessionExistsFor(String username);
+    boolean sessionExistsForAuthToken(String authToken);
     boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws DataAccessException;
     void logout(String authToken) throws DataAccessException;
 }

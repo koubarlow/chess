@@ -19,7 +19,7 @@ public class MemoryAuthDAO implements AuthDAO {
 
     public AuthData login(LoginRequest loginRequest) throws DataAccessException {
         if (usernameAndPasswordMatch(loginRequest) && !(sessionExistsFor(loginRequest.username()))) {
-            AuthData authData = new AuthData(AuthDAO.generateToken(), loginRequest.username());
+            AuthData authData = new AuthData(BaseDAO.generateId(), loginRequest.username());
             this.sessions.put(authData.authToken(), authData.username());
             return authData;
         }
@@ -33,6 +33,10 @@ public class MemoryAuthDAO implements AuthDAO {
             }
         }
         return false;
+    }
+
+    public boolean sessionExistsForAuthToken(String authToken) {
+        return sessions.get(authToken) != null;
     }
 
     public boolean usernameAndPasswordMatch(LoginRequest request) throws DataAccessException {
