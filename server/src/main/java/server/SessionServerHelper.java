@@ -1,7 +1,9 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
 import service.AuthService;
@@ -15,10 +17,19 @@ public class SessionServerHelper {
     }
 
     public void login(Context context) throws Exception {
-        LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
-        AuthData authenticatedUser = authService.login(loginRequest);
-        context.header(Server.AUTH_TOKEN_HEADER, authenticatedUser.authToken());
-        context.json(new Gson().toJson(authenticatedUser));
+        try {
+            LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
+            AuthData authenticatedUser = authService.login(loginRequest);
+            context.header(Server.AUTH_TOKEN_HEADER, authenticatedUser.authToken());
+            context.json(new Gson().toJson(authenticatedUser));
+            context.status(200);
+        } catch (BadRequestException e) {
+            context.json(e.toJson());
+            context.status(400);
+        } catch (UnauthorizedException e) {
+            context.json(e.toJson());
+            context.status(401);
+        }
     }
 
     // Need to just pass things via header

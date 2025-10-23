@@ -1,6 +1,7 @@
 package service;
 
 import dataaccess.AuthDAO;
+import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
 import model.*;
 
@@ -13,6 +14,9 @@ public class AuthService {
     }
 
     public AuthData login(LoginRequest loginRequest) throws Exception {
+        if (loginRequest.username() == null || loginRequest.password() == null) {
+            throw new BadRequestException("Error: bad request");
+        }
         return this.authDAO.login(loginRequest);
     }
 

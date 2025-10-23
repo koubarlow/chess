@@ -15,17 +15,17 @@ public class MemoryGameDAO implements GameDAO {
 
     public MemoryGameDAO() {}
 
-    public GameData createGame(CreateGameRequest createGameRequest) throws DataAccessException {
+    public GameData createGame(CreateGameRequest createGameRequest) throws Exception {
         GameData game = new GameData(nextId++, "", "", createGameRequest.gameName(), new ChessGame());
         games.put(game.gameID(), game);
         return game;
     }
 
-    public GameList listGames() throws DataAccessException {
+    public GameList listGames() throws Exception {
         return new GameList(games.values());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException {
+    public void joinGame(JoinGameRequest joinGameRequest) throws Exception {
 
         int gameId = joinGameRequest.gameID();
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();

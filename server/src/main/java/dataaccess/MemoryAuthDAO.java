@@ -18,12 +18,12 @@ public class MemoryAuthDAO implements AuthDAO {
     }
 
     public AuthData login(LoginRequest loginRequest) throws Exception {
-        if (usernameAndPasswordMatch(loginRequest) && !(sessionExistsFor(loginRequest.username()))) {
+        if (authenticateUser(loginRequest)) {
             AuthData authData = new AuthData(BaseDAO.generateId(), loginRequest.username());
             this.sessions.put(authData.authToken(), authData.username());
             return authData;
         }
-        return null;
+        throw new UnauthorizedException("Error: unauthorized");
     }
 
     public boolean sessionExistsFor(String username) {
@@ -39,12 +39,13 @@ public class MemoryAuthDAO implements AuthDAO {
         return sessions.get(authToken) != null;
     }
 
-    public boolean usernameAndPasswordMatch(LoginRequest request) throws Exception {
+    public boolean authenticateUser(LoginRequest request) throws Exception {
         String username = request.username();
         String password = request.password();
-        UserData user = userDAO.getUser(username);
 
-        return Objects.equals(user.username(), username) && Objects.equals(user.password(), password);
+        UserData existingUser = userDAO.getUser(username);
+        if (existingUser == null) { throw new UnauthorizedException("Error: unauthorized"); }
+        return Objects.equals(existingUser.username(), username) && Objects.equals(existingUser.password(), password);
     }
 
     public void logout(String authToken) throws DataAccessException {

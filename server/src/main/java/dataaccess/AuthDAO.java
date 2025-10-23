@@ -34,7 +34,7 @@ public interface AuthDAO extends BaseDAO {
     AuthData login(LoginRequest loginRequest) throws Exception;
     boolean sessionExistsFor(String username);
     boolean sessionExistsForAuthToken(String authToken);
-    boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws Exception;
+    boolean authenticateUser(LoginRequest loginRequest) throws Exception;
     void logout(String authToken) throws Exception;
     void clearSessions() throws Exception;
 }
