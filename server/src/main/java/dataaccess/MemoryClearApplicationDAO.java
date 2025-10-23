@@ -12,7 +12,7 @@ public class MemoryClearApplicationDAO implements ClearApplicationDAO {
         this.authDAO = authDAO;
     }
 
-    public void clearApplication() throws DataAccessException {
+    public void clearApplication() throws Exception {
         this.gameDAO.clearGames();
         this.userDAO.clearUsers();
         this.authDAO.clearSessions();

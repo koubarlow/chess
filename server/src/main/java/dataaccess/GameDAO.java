@@ -43,11 +43,11 @@ public interface GameDAO extends BaseDAO {
     //    Failure response	[403] { "message": "Error: already taken" }
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
-    GameList listGames() throws DataAccessException;
+    GameList listGames() throws Exception;
 
-    GameData createGame(CreateGameRequest createGameRequest) throws DataAccessException;
+    GameData createGame(CreateGameRequest createGameRequest) throws Exception;
 
-    void joinGame(JoinGameRequest joinGameRequest) throws DataAccessException;
+    void joinGame(JoinGameRequest joinGameRequest) throws Exception;
 
-    void clearGames() throws DataAccessException;
+    void clearGames() throws Exception;
 }

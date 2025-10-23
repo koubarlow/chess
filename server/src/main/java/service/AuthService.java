@@ -12,11 +12,11 @@ public class AuthService {
         this.authDAO = authDAO;
     }
 
-    public AuthData login(LoginRequest loginRequest) throws DataAccessException {
+    public AuthData login(LoginRequest loginRequest) throws Exception {
         return this.authDAO.login(loginRequest);
     }
 
-    public void logout(LogoutRequest logoutRequest) throws DataAccessException {
+    public void logout(LogoutRequest logoutRequest) throws Exception {
         this.authDAO.logout(logoutRequest.authToken());
     }
 }

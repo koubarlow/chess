@@ -10,5 +10,5 @@ public interface ClearApplicationDAO extends BaseDAO {
     //    HTTP Method	DELETE
     //    Success response	[200] {}
     //    Failure response	[500] { "message": "Error: (description of error)" }
-    void clearApplication() throws DataAccessException;
+    void clearApplication() throws Exception;
 }

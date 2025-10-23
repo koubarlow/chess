@@ -19,9 +19,9 @@ public interface UserDAO extends BaseDAO {
 
     // GetUser -> Returns UserData by given username
 
-    UserData getUser(String username) throws DataAccessException;
+    UserData getUser(String username) throws Exception;
 
-    UserData createUser(UserData userData) throws DataAccessException;
+    UserData createUser(UserData userData) throws Exception;
 
-    void clearUsers() throws DataAccessException;
+    void clearUsers() throws Exception;
 }

@@ -14,7 +14,7 @@ public class SessionServerHelper {
         this.authService = authService;
     }
 
-    public void login(Context context) throws DataAccessException {
+    public void login(Context context) throws Exception {
         LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
         AuthData authenticatedUser = authService.login(loginRequest);
         context.header(Server.AUTH_TOKEN_HEADER, authenticatedUser.authToken());
@@ -22,7 +22,7 @@ public class SessionServerHelper {
     }
 
     // Need to just pass things via header
-    public void logout(Context context) throws DataAccessException {
+    public void logout(Context context) throws Exception {
         String authToken = context.header(Server.AUTH_TOKEN_HEADER);
         LogoutRequest logoutRequest = new LogoutRequest(authToken);
         authService.logout(logoutRequest);

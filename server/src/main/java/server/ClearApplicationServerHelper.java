@@ -11,7 +11,11 @@ public class ClearApplicationServerHelper {
 
     public ClearApplicationServerHelper(ClearApplicationService clearApplicationService) { this.clearApplicationService = clearApplicationService; }
 
-    public void clearApplication(Context context) throws DataAccessException {
-        clearApplicationService.clearApplication();
+    public void clearApplication(Context context) throws Exception {
+        try {
+            clearApplicationService.clearApplication();
+        } catch (DataAccessException e) {
+            throw new DataAccessException(e.getMessage());
+        }
     }
 }

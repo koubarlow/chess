@@ -28,6 +28,9 @@ public class Server {
         GameServerHelper gameServerHelper = new GameServerHelper(gameService);
         ClearApplicationServerHelper clearApplicationServerHelper = new ClearApplicationServerHelper(clearApplicationService);
 
+        // TA NOTES:
+        // Make Exception subclasses (Already taken, etc, then Catch them in your handlers. Throw them in service and deeper!!!)
+
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", userServerHelper::register)
                 .post("/session", sessionServerHelper::login)

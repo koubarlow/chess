@@ -31,10 +31,10 @@ public interface AuthDAO extends BaseDAO {
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
     // GetAuth -> Returns AuthData by authToken
-    AuthData login(LoginRequest loginRequest) throws DataAccessException;
+    AuthData login(LoginRequest loginRequest) throws Exception;
     boolean sessionExistsFor(String username);
     boolean sessionExistsForAuthToken(String authToken);
-    boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws DataAccessException;
-    void logout(String authToken) throws DataAccessException;
-    void clearSessions() throws DataAccessException;
+    boolean usernameAndPasswordMatch(LoginRequest loginRequest) throws Exception;
+    void logout(String authToken) throws Exception;
+    void clearSessions() throws Exception;
 }

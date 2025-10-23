@@ -18,21 +18,21 @@ public class GameService {
         this.gameDAO = gameDAO;
     }
 
-    public GameData createGame(String authToken, CreateGameRequest createGameRequest) throws DataAccessException {
+    public GameData createGame(String authToken, CreateGameRequest createGameRequest) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             return this.gameDAO.createGame(createGameRequest);
         }
         return null;
     }
 
-    public GameList listGames(String authToken) throws DataAccessException {
+    public GameList listGames(String authToken) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             return this.gameDAO.listGames();
         }
         return null;
     }
 
-    public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws DataAccessException {
+    public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             this.gameDAO.joinGame(joinGameRequest);
         } else {

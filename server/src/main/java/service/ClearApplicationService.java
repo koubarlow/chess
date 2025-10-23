@@ -11,7 +11,7 @@ public class ClearApplicationService {
         this.clearApplicationDAO = clearApplicationDAO;
     }
 
-    public void clearApplication() throws DataAccessException {
+    public void clearApplication() throws Exception {
         this.clearApplicationDAO.clearApplication();
     }
 }
