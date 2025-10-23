@@ -18,7 +18,7 @@ public class Server {
         GameDAO memoryGameDAO = new MemoryGameDAO();
         ClearApplicationDAO clearApplicationDAO = new MemoryClearApplicationDAO(memoryGameDAO, memoryUserDAO, memoryAuthDAO);
 
-        UserService userService = new UserService(memoryUserDAO);
+        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
         AuthService authService = new AuthService(memoryAuthDAO);
         GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);

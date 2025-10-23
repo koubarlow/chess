@@ -1,8 +1,12 @@
 package server;
 
 import com.google.gson.Gson;
+import dataaccess.AlreadyTakenException;
+import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
+import dataaccess.UnauthorizedException;
 import io.javalin.http.Context;
+import model.AuthData;
 import model.RegisterRequest;
 
 import model.UserData;
@@ -20,22 +24,18 @@ public class UserServerHelper {
 
     public void register(Context context) throws Exception {
 
-        RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
-
-        UserData existingUser = userService.getUser(registerRequest.username());
-        if (existingUser != null) {
-//            ErrorResponse error = new ErrorResponse("Error: already taken");
-//            context.json("");
+        try {
+            RegisterRequest registerRequest = new Gson().fromJson(context.body(), RegisterRequest.class);
+            AuthData authData = userService.register(registerRequest);
+            context.json(new Gson().toJson(authData));
+            context.status(200);
+        } catch (BadRequestException e) {
+            context.json(e.toJson());
+            context.status(400);
+        } catch (AlreadyTakenException e) {
+            context.json(e.toJson());
             context.status(403);
         }
-
-        if (registerRequest.email() == null || registerRequest.username() == null || registerRequest.password() == null) {
-            context.status(400);
-        }
-
-        UserData user = userService.register(registerRequest);
-        context.json(new Gson().toJson(user));
-        context.status(200);
     }
 
 //    public void getUser(Context context) throws DataAccessException {
