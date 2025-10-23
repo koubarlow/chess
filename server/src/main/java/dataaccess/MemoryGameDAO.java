@@ -7,6 +7,7 @@ import model.GameList;
 import model.JoinGameRequest;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO {
 
@@ -16,7 +17,7 @@ public class MemoryGameDAO implements GameDAO {
     public MemoryGameDAO() {}
 
     public GameData createGame(CreateGameRequest createGameRequest) throws Exception {
-        GameData game = new GameData(nextGameId++, "", "", createGameRequest.gameName(), new ChessGame());
+        GameData game = new GameData(nextGameId++, null, null, createGameRequest.gameName(), new ChessGame());
         games.put(game.gameID(), game);
         return game;
     }
@@ -25,26 +26,35 @@ public class MemoryGameDAO implements GameDAO {
         return new GameList(games.values());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest) throws Exception {
+    public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
 
+        if (joinGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
         int gameId = joinGameRequest.gameID();
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
+        if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
         GameData game = games.get(gameId);
+        if (game == null) { throw new DataAccessException("Error: game does not exist"); }
 
         String gameName = game.gameName();
         String whiteUsername = game.whiteUsername();
         String blackUsername = game.blackUsername();
         ChessGame chessGame = game.game();
 
-        if (teamColor == ChessGame.TeamColor.WHITE && whiteUsername != null) {
-            whiteUsername = joinGameRequest.username();
-        } else if (teamColor == ChessGame.TeamColor.BLACK && blackUsername != null) {
-            blackUsername = joinGameRequest.username();
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            if (whiteUsername == null) {
+                whiteUsername = username;
+            } else {
+                throw new AlreadyTakenException("Error: already taken");
+            }
         } else {
-            throw new AlreadyTakenException("Error: already taken");
+            if (blackUsername == null) {
+                blackUsername = username;
+            } else {
+                throw new AlreadyTakenException("Error: already taken");
+            }
         }
 
-        GameData updatedGame = new GameData(joinGameRequest.gameID(), whiteUsername, blackUsername, gameName, chessGame);
+        GameData updatedGame = new GameData(gameId, whiteUsername, blackUsername, gameName, chessGame);
         games.put(gameId, updatedGame);
     }
 

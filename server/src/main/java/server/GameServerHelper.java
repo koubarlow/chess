@@ -46,6 +46,9 @@ public class GameServerHelper {
             String authToken = context.header(Server.AUTH_TOKEN_HEADER);
             JoinGameRequest joinGameRequest = new Gson().fromJson(context.body(), JoinGameRequest.class);
             gameService.joinGame(authToken, joinGameRequest);
+        } catch (UnauthorizedException e) {
+            context.json(e.toJson());
+            context.status(401);
         } catch (BadRequestException e) {
             context.json(e.toJson());
             context.status(400);

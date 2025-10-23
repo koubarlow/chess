@@ -30,6 +30,10 @@ public class MemoryAuthDAO implements AuthDAO {
         return sessions.get(authToken) != null;
     }
 
+    public String getUsername(String authToken) {
+        return sessions.get(authToken);
+    }
+
     public boolean authenticateUser(LoginRequest request) throws Exception {
         String username = request.username();
         String password = request.password();

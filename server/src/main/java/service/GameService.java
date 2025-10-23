@@ -10,10 +10,12 @@ public class GameService {
 
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
+    private final UserDAO userDAO;
 
-    public GameService(GameDAO gameDAO, AuthDAO authDAO) {
+    public GameService(GameDAO gameDAO, AuthDAO authDAO, UserDAO userDAO) {
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
+        this.userDAO = userDAO;
     }
 
     public GameData createGame(String authToken, CreateGameRequest createGameRequest) throws Exception {
@@ -34,9 +36,10 @@ public class GameService {
 
     public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
-            this.gameDAO.joinGame(joinGameRequest);
+            String username = this.authDAO.getUsername(authToken);
+            this.gameDAO.joinGame(joinGameRequest, username);
         } else {
-            throw new DataAccessException("Unauthorized");
+            throw new UnauthorizedException("Error: unauthorized");
         }
     }
 

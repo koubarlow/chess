@@ -47,7 +47,7 @@ public interface GameDAO extends BaseDAO {
 
     GameData createGame(CreateGameRequest createGameRequest) throws Exception;
 
-    void joinGame(JoinGameRequest joinGameRequest) throws Exception;
+    void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception;
 
     void clearGames() throws Exception;
 }

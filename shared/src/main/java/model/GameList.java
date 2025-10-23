@@ -11,7 +11,6 @@ public class GameList extends ArrayList<GameData> {
     public GameList() {
 
     }
-
     public GameList(Collection<GameData> games) { super(games); }
 
     public String toString() { return new Gson().toJson(this.toArray()); }

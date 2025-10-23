@@ -20,16 +20,13 @@ public class Server {
 
         UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
         AuthService authService = new AuthService(memoryAuthDAO);
-        GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO);
+        GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO, memoryUserDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);
 
         UserServerHelper userServerHelper = new UserServerHelper(userService);
         SessionServerHelper sessionServerHelper = new SessionServerHelper(authService);
         GameServerHelper gameServerHelper = new GameServerHelper(gameService);
         ClearApplicationServerHelper clearApplicationServerHelper = new ClearApplicationServerHelper(clearApplicationService);
-
-        // TA NOTES:
-        // Make Exception subclasses (Already taken, etc, then Catch them in your handlers. Throw them in service and deeper!!!)
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", userServerHelper::register)
