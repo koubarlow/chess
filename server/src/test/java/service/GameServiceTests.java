@@ -25,6 +25,9 @@ public class GameServiceTests {
         GameData fakeGameData = new GameData(299, null, null, "playWithMe", new ChessGame());
         games.put(299, fakeGameData);
 
+        GameData fakeGameData2 = new GameData(300, null, null, "playWithMee", new ChessGame());
+        games.put(300, fakeGameData2);
+
         fakeServer = new FakeServer(new MemoryUserDAO(users), new MemoryAuthDAO(sessions), new MemoryGameDAO(games));
     }
 
@@ -72,14 +75,15 @@ public class GameServiceTests {
     @Order(5)
     @DisplayName("Join Game Success")
     public void joinGameSuccess() throws Exception {
-        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "john");
+        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 300, "john");
         fakeServer.fakeGameService.joinGame("123456789", joinGameRequest);
         GameList games = fakeServer.fakeGameService.listGames("123456789");
-        GameData expected = new GameData(299, "john", null, "playWithMe", new ChessGame());
-        Assertions.assertEquals(expected, games.getFirst());
+        GameData expected = new GameData(300, "john", null, "playWithMee", new ChessGame());
+        Assertions.assertEquals(expected, games.getLast());
     }
+
     @Test
-    @Order(5)
+    @Order(6)
     @DisplayName("Join Game Failure")
     public void joinGameAlreadyTaken() throws Exception {
         JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "john");
