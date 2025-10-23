@@ -1,8 +1,7 @@
-package chess.pieceMoves;
+package chess.piecemoves;
 
 import chess.ChessBoard;
 import chess.ChessMove;
-import chess.ChessPiece;
 import chess.ChessPosition;
 
 import java.util.Set;
