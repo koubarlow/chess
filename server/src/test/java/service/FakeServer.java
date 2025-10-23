@@ -19,7 +19,7 @@ public class FakeServer {
 
         this.fakeAuthService = new AuthService(fakeMemoryUserDAO, fakeMemoryAuthDAO);
         this.fakeUserService = new UserService(fakeMemoryUserDAO, fakeMemoryAuthDAO);
-        this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO, fakeMemoryUserDAO);
+        this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO);
     }
 
     public FakeServer(UserDAO userDAO) {
@@ -28,12 +28,12 @@ public class FakeServer {
 
         this.fakeAuthService = new AuthService(userDAO, fakeMemoryAuthDAO);
         this.fakeUserService = new UserService(userDAO, fakeMemoryAuthDAO);
-        this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO, userDAO);
+        this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO);
     }
 
     public FakeServer(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.fakeAuthService = new AuthService(userDAO, authDAO);
         this.fakeUserService = new UserService(userDAO, authDAO);
-        this.fakeGameService = new GameService(gameDAO, authDAO, userDAO);
+        this.fakeGameService = new GameService(gameDAO, authDAO);
     }
 }

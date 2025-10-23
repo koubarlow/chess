@@ -21,7 +21,7 @@ public class SessionServerHelper {
         try {
             LoginRequest loginRequest = new Gson().fromJson(context.body(), LoginRequest.class);
             AuthData authenticatedUser = authService.login(loginRequest);
-            context.header(Server.AUTH_TOKEN_HEADER, authenticatedUser.authToken());
+            context.header(Server.authTokenHeader, authenticatedUser.authToken());
             context.json(new Gson().toJson(authenticatedUser));
             context.status(200);
         } catch (BadRequestException e) {
@@ -35,7 +35,7 @@ public class SessionServerHelper {
 
     public void logout(Context context) throws Exception {
         try {
-            String authToken = context.header(Server.AUTH_TOKEN_HEADER);
+            String authToken = context.header(Server.authTokenHeader);
             LogoutRequest logoutRequest = new LogoutRequest(authToken);
             authService.logout(logoutRequest);
         } catch (UnauthorizedException e) {
