@@ -30,4 +30,10 @@ public class FakeServer {
         this.fakeUserService = new UserService(userDAO, fakeMemoryAuthDAO);
         this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO, userDAO);
     }
+
+    public FakeServer(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+        this.fakeAuthService = new AuthService(userDAO, authDAO);
+        this.fakeUserService = new UserService(userDAO, authDAO);
+        this.fakeGameService = new GameService(gameDAO, authDAO, userDAO);
+    }
 }

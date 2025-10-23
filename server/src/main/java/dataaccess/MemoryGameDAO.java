@@ -11,10 +11,14 @@ import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO {
 
-    final private HashMap<Integer, GameData> games = new HashMap<>();
+    private HashMap<Integer, GameData> games = new HashMap<>();
     int nextGameId = 1;
 
     public MemoryGameDAO() {}
+
+    public MemoryGameDAO(HashMap<Integer, GameData> games) {
+        this.games = games;
+    }
 
     public GameData createGame(CreateGameRequest createGameRequest) throws Exception {
         GameData game = new GameData(nextGameId++, null, null, createGameRequest.gameName(), new ChessGame());
