@@ -22,7 +22,8 @@ public class UserService {
         }
         UserData user = new UserData(registerRequest.username(), registerRequest.password(), registerRequest.email());
         this.userDAO.createUser(user);
-        return this.authDAO.login(new LoginRequest(registerRequest.username(), registerRequest.password()), this.userDAO.getUser(registerRequest.username()));
+        LoginRequest req = new LoginRequest(registerRequest.username(), registerRequest.password());
+        return this.authDAO.login(req, this.userDAO.getUser(registerRequest.username()));
     }
 
     public UserData getUser(String username) throws Exception {

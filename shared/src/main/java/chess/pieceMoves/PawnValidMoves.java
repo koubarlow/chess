@@ -60,8 +60,9 @@ public class PawnValidMoves extends ValidMoves {
 
         if (pieceInPropPos != null) {
             if (pieceInPropPos.getTeamColor() != piece.getTeamColor()) {
-
-                if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && propRow == 8) || (piece.getTeamColor() == ChessGame.TeamColor.BLACK && propRow == 1)) {
+                boolean whiteColor = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
+                boolean blackColor = piece.getTeamColor() == ChessGame.TeamColor.BLACK;
+                if ((whiteColor && propRow == 8) || (blackColor && propRow == 1)) {
                     super.moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.BISHOP));
                     super.moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.ROOK));
                     super.moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.KNIGHT));
@@ -89,7 +90,9 @@ public class PawnValidMoves extends ValidMoves {
         }
 
 
-        if ((piece.getTeamColor() == ChessGame.TeamColor.WHITE && propRow == 8) || (piece.getTeamColor() == ChessGame.TeamColor.BLACK && propRow == 1)) {
+        boolean whiteColor = piece.getTeamColor() == ChessGame.TeamColor.WHITE;
+        boolean blackColor = piece.getTeamColor() == ChessGame.TeamColor.BLACK;
+        if ((whiteColor && propRow == 8) || (blackColor && propRow == 1)) {
             moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.BISHOP));
             moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.ROOK));
             moves.add(new ChessMove(myPos, propPos, ChessPiece.PieceType.KNIGHT));

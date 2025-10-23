@@ -17,7 +17,7 @@ public class GameServerHelper {
 
     public void createGame(Context context) throws Exception {
         try {
-            String authToken = context.header(Server.AUTH_TOKEN_HEADER);
+            String authToken = context.header(Server.authTokenHeader);
             CreateGameRequest createGameRequest = new Gson().fromJson(context.body(), CreateGameRequest.class);
             GameData game = gameService.createGame(authToken, createGameRequest);
             context.json(new Gson().toJson(game));
@@ -32,7 +32,7 @@ public class GameServerHelper {
 
     public void listGames(Context context) throws Exception {
         try {
-            String authToken = context.header(Server.AUTH_TOKEN_HEADER);
+            String authToken = context.header(Server.authTokenHeader);
             GameList games = gameService.listGames(authToken);
             context.json(games.toJson(), GameList.class);
         } catch (UnauthorizedException e) {
@@ -43,7 +43,7 @@ public class GameServerHelper {
 
     public void joinGame(Context context) throws Exception {
         try {
-            String authToken = context.header(Server.AUTH_TOKEN_HEADER);
+            String authToken = context.header(Server.authTokenHeader);
             JoinGameRequest joinGameRequest = new Gson().fromJson(context.body(), JoinGameRequest.class);
             gameService.joinGame(authToken, joinGameRequest);
         } catch (UnauthorizedException e) {

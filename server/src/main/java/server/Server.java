@@ -10,7 +10,7 @@ import service.UserService;
 public class Server {
 
     private final Javalin javalin;
-    public static String AUTH_TOKEN_HEADER = "authorization";
+    public static String authTokenHeader = "authorization";
 
     public Server() {
         UserDAO memoryUserDAO = new MemoryUserDAO();
@@ -20,7 +20,7 @@ public class Server {
 
         UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
         AuthService authService = new AuthService(memoryUserDAO, memoryAuthDAO);
-        GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO, memoryUserDAO);
+        GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);
 
         UserServerHelper userServerHelper = new UserServerHelper(userService);

@@ -10,12 +10,10 @@ public class GameService {
 
     private final GameDAO gameDAO;
     private final AuthDAO authDAO;
-    private final UserDAO userDAO;
 
-    public GameService(GameDAO gameDAO, AuthDAO authDAO, UserDAO userDAO) {
+    public GameService(GameDAO gameDAO, AuthDAO authDAO) {
         this.authDAO = authDAO;
         this.gameDAO = gameDAO;
-        this.userDAO = userDAO;
     }
 
     public GameData createGame(String authToken, CreateGameRequest createGameRequest) throws Exception {

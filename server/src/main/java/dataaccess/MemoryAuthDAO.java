@@ -52,7 +52,7 @@ public class MemoryAuthDAO implements AuthDAO {
         throw new UnauthorizedException("Error: unauthorized");
     }
 
-    public void clearSessions() throws DataAccessException {
+    public void clearSessions() {
         this.sessions.clear();
     }
 }

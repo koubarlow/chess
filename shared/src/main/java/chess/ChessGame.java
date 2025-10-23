@@ -130,7 +130,8 @@ public class ChessGame {
 
         for (ChessPiece piece : allPieces) {
             if (piece.getTeamColor() == teamColor) {
-                potentialMoves = Stream.concat(potentialMoves.stream(), piece.pieceMoves(board, piece.getCurrentPosition()).stream()).collect(Collectors.toSet());
+                Stream<ChessMove> pieceMovesStream = piece.pieceMoves(board, piece.getCurrentPosition()).stream();
+                potentialMoves = Stream.concat(potentialMoves.stream(), pieceMovesStream).collect(Collectors.toSet());
             }
         }
 
@@ -152,7 +153,8 @@ public class ChessGame {
 
         if (myKing == null) { return false; }
         for (ChessMove opponentMove : potentialOpponentMoves) {
-            if (myKing.getCurrentPosition().getRow() == opponentMove.getEndPosition().getRow() && myKing.getCurrentPosition().getColumn() == opponentMove.getEndPosition().getColumn()) {
+            boolean kingAndOpponentSamePos = myKing.getCurrentPosition().getRow() == opponentMove.getEndPosition().getRow();
+            if (kingAndOpponentSamePos && myKing.getCurrentPosition().getColumn() == opponentMove.getEndPosition().getColumn()) {
                 return true;
             }
         }
@@ -190,7 +192,9 @@ public class ChessGame {
     private boolean canMove(TeamColor teamColor) {
         Collection<ChessMove> potentialMovesForTeam = potentialMovesForTeam(this.board, teamColor, false);
         for (ChessMove potentialMove : potentialMovesForTeam) {
-            boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potentialMove.getStartPosition(), potentialMove.getEndPosition(), this, false);
+            ChessPosition potMoveStart = potentialMove.getStartPosition();
+            ChessPosition potMoveEnd = potentialMove.getEndPosition();
+            boolean canSetNewPosWithoutKingBeingInDanger = this.board.setNewPosition(potMoveStart, potMoveEnd, this, false);
             if (canSetNewPosWithoutKingBeingInDanger) {
                 return true;
             }

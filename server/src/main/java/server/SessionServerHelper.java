@@ -33,7 +33,6 @@ public class SessionServerHelper {
         }
     }
 
-    // Need to just pass things via header
     public void logout(Context context) throws Exception {
         try {
             String authToken = context.header(Server.AUTH_TOKEN_HEADER);
