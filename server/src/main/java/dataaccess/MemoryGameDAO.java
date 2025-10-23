@@ -11,12 +11,12 @@ import java.util.HashMap;
 public class MemoryGameDAO implements GameDAO {
 
     final private HashMap<Integer, GameData> games = new HashMap<>();
-    int nextId = 0;
+    int nextGameId = 1;
 
     public MemoryGameDAO() {}
 
     public GameData createGame(CreateGameRequest createGameRequest) throws Exception {
-        GameData game = new GameData(nextId++, "", "", createGameRequest.gameName(), new ChessGame());
+        GameData game = new GameData(nextGameId++, "", "", createGameRequest.gameName(), new ChessGame());
         games.put(game.gameID(), game);
         return game;
     }
@@ -41,7 +41,7 @@ public class MemoryGameDAO implements GameDAO {
         } else if (teamColor == ChessGame.TeamColor.BLACK && blackUsername != null) {
             blackUsername = joinGameRequest.username();
         } else {
-            throw new DataAccessException("Already taken");
+            throw new AlreadyTakenException("Error: already taken");
         }
 
         GameData updatedGame = new GameData(joinGameRequest.gameID(), whiteUsername, blackUsername, gameName, chessGame);

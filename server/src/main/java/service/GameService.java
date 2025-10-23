@@ -1,8 +1,6 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.DataAccessException;
-import dataaccess.GameDAO;
+import dataaccess.*;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
@@ -19,17 +17,19 @@ public class GameService {
     }
 
     public GameData createGame(String authToken, CreateGameRequest createGameRequest) throws Exception {
+
+        if (createGameRequest.gameName() == null) { throw new BadRequestException("Error: bad request"); }
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             return this.gameDAO.createGame(createGameRequest);
         }
-        return null;
+        throw new UnauthorizedException("Error: unauthorized");
     }
 
     public GameList listGames(String authToken) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             return this.gameDAO.listGames();
         }
-        return null;
+        throw new UnauthorizedException("Error: unauthorized");
     }
 
     public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws Exception {

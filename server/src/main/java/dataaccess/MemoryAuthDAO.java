@@ -26,15 +26,6 @@ public class MemoryAuthDAO implements AuthDAO {
         throw new UnauthorizedException("Error: unauthorized");
     }
 
-    public boolean sessionExistsFor(String username) {
-        for (Map.Entry<String, String> session: sessions.entrySet()) {
-            if (Objects.equals(username, session.getValue())) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean sessionExistsForAuthToken(String authToken) {
         return sessions.get(authToken) != null;
     }
@@ -48,12 +39,12 @@ public class MemoryAuthDAO implements AuthDAO {
         return Objects.equals(existingUser.username(), username) && Objects.equals(existingUser.password(), password);
     }
 
-    public void logout(String authToken) throws DataAccessException {
+    public void logout(String authToken) throws Exception {
         if (sessions.get(authToken) != null) {
             sessions.remove(authToken);
             return;
         }
-        throw new DataAccessException("Already logged out");
+        throw new UnauthorizedException("Error: unauthorized");
     }
 
     public void clearSessions() throws DataAccessException {

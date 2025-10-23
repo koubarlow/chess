@@ -34,8 +34,13 @@ public class SessionServerHelper {
 
     // Need to just pass things via header
     public void logout(Context context) throws Exception {
-        String authToken = context.header(Server.AUTH_TOKEN_HEADER);
-        LogoutRequest logoutRequest = new LogoutRequest(authToken);
-        authService.logout(logoutRequest);
+        try {
+            String authToken = context.header(Server.AUTH_TOKEN_HEADER);
+            LogoutRequest logoutRequest = new LogoutRequest(authToken);
+            authService.logout(logoutRequest);
+        } catch (UnauthorizedException e) {
+            context.json(e.toJson());
+            context.status(401);
+        }
     }
 }
