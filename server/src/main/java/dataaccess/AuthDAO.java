@@ -2,6 +2,7 @@ package dataaccess;
 
 import model.AuthData;
 import model.LoginRequest;
+import model.UserData;
 
 import java.util.UUID;
 
@@ -31,10 +32,10 @@ public interface AuthDAO extends BaseDAO {
     //    Failure response	[500] { "message": "Error: (description of error)" }
 
     // GetAuth -> Returns AuthData by authToken
-    AuthData login(LoginRequest loginRequest) throws Exception;
+    AuthData login(LoginRequest loginRequest, UserData existingUser) throws Exception;
     boolean sessionExistsForAuthToken(String authToken);
     String getUsername(String authToken);
-    boolean authenticateUser(LoginRequest loginRequest) throws Exception;
+    boolean authenticateUser(LoginRequest loginRequest, UserData existingUser) throws Exception;
     void logout(String authToken) throws Exception;
     void clearSessions() throws Exception;
 }

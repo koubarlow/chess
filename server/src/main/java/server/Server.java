@@ -14,12 +14,12 @@ public class Server {
 
     public Server() {
         UserDAO memoryUserDAO = new MemoryUserDAO();
-        AuthDAO memoryAuthDAO = new MemoryAuthDAO(memoryUserDAO);
+        AuthDAO memoryAuthDAO = new MemoryAuthDAO();
         GameDAO memoryGameDAO = new MemoryGameDAO();
         ClearApplicationDAO clearApplicationDAO = new MemoryClearApplicationDAO(memoryGameDAO, memoryUserDAO, memoryAuthDAO);
 
         UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
-        AuthService authService = new AuthService(memoryAuthDAO);
+        AuthService authService = new AuthService(memoryUserDAO, memoryAuthDAO);
         GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO, memoryUserDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);
 

@@ -7,6 +7,7 @@ import dataaccess.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
 import service.AuthService;
+import service.UserService;
 
 public class SessionServerHelper {
 

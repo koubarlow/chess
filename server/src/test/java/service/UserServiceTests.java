@@ -4,7 +4,6 @@ import dataaccess.BadRequestException;
 import model.AuthData;
 import model.RegisterRequest;
 import org.junit.jupiter.api.*;
-import passoff.model.TestAuthResult;
 
 public class UserServiceTests {
 
@@ -17,7 +16,7 @@ public class UserServiceTests {
 
     @Test
     @Order(1)
-    @DisplayName("Success UserService.register")
+    @DisplayName("Register success")
     public void createUserSuccess() throws Exception {
         //submit register request
         RegisterRequest fakeRegisterRequest = new RegisterRequest("kou", "12345", "kou@test.com");
@@ -28,7 +27,7 @@ public class UserServiceTests {
 
     @Test
     @Order(2)
-    @DisplayName("Fail UserService.register")
+    @DisplayName("Register fail no username")
     public void createUserFail() {
         //submit register request
         RegisterRequest fakeRegisterRequest = new RegisterRequest(null, "12345", "kou@test.com");
@@ -36,8 +35,8 @@ public class UserServiceTests {
     }
 
     @Test
-    @Order(2)
-    @DisplayName("Success UserService.getUser")
+    @Order(3)
+    @DisplayName("GetUser success")
     public void getUserSuccess() throws Exception {
         RegisterRequest fakeRegisterRequest = new RegisterRequest("ben", "54321", "ben@test.com");
         AuthData newUser = fakeServer.fakeUserService.register(fakeRegisterRequest);
@@ -47,8 +46,8 @@ public class UserServiceTests {
     }
 
     @Test
-    @Order(1)
-    @DisplayName("Failure UserService.getUser")
+    @Order(4)
+    @DisplayName("GetUser fail no username")
     public void getUserFail() {
         Assertions.assertThrows(BadRequestException.class, () -> fakeServer.fakeUserService.getUser(null));
     }

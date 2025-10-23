@@ -10,15 +10,17 @@ import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO {
 
-    final private HashMap<String, String> sessions = new HashMap<>();
-    UserDAO userDAO;
+    private HashMap<String, String> sessions = new HashMap<>();
 
-    public MemoryAuthDAO(UserDAO userDAO) {
-        this.userDAO = userDAO;
+    public MemoryAuthDAO() {
     }
 
-    public AuthData login(LoginRequest loginRequest) throws Exception {
-        if (authenticateUser(loginRequest)) {
+    public MemoryAuthDAO(HashMap<String, String> sessions) {
+        this.sessions = sessions;
+    }
+
+    public AuthData login(LoginRequest loginRequest, UserData existingUser) throws Exception {
+        if (authenticateUser(loginRequest, existingUser)) {
             AuthData authData = new AuthData(BaseDAO.generateId(), loginRequest.username());
             this.sessions.put(authData.authToken(), authData.username());
             return authData;
@@ -34,11 +36,10 @@ public class MemoryAuthDAO implements AuthDAO {
         return sessions.get(authToken);
     }
 
-    public boolean authenticateUser(LoginRequest request) throws Exception {
+    public boolean authenticateUser(LoginRequest request, UserData existingUser) throws Exception {
         String username = request.username();
         String password = request.password();
 
-        UserData existingUser = userDAO.getUser(username);
         if (existingUser == null) { throw new UnauthorizedException("Error: unauthorized"); }
         return Objects.equals(existingUser.username(), username) && Objects.equals(existingUser.password(), password);
     }

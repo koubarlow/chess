@@ -3,13 +3,16 @@ package service;
 import dataaccess.AuthDAO;
 import dataaccess.BadRequestException;
 import dataaccess.DataAccessException;
+import dataaccess.UserDAO;
 import model.*;
 
 public class AuthService {
 
+    private final UserDAO userDAO;
     private final AuthDAO authDAO;
 
-    public AuthService(AuthDAO authDAO) {
+    public AuthService(UserDAO userDAO, AuthDAO authDAO) {
+        this.userDAO = userDAO;
         this.authDAO = authDAO;
     }
 
@@ -17,7 +20,8 @@ public class AuthService {
         if (loginRequest.username() == null || loginRequest.password() == null) {
             throw new BadRequestException("Error: bad request");
         }
-        return this.authDAO.login(loginRequest);
+        UserData existingUser = userDAO.getUser(loginRequest.username());
+        return this.authDAO.login(loginRequest, existingUser);
     }
 
     public void logout(LogoutRequest logoutRequest) throws Exception {
