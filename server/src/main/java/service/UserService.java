@@ -26,12 +26,7 @@ public class UserService {
     }
 
     public UserData getUser(String username) throws Exception {
+        if (username == null) { throw new BadRequestException("Error: bad request"); }
         return this.userDAO.getUser(username);
-    }
-
-    private void validateRegisterRequestParameters(RegisterRequest req) throws Exception {
-        if (req.username() == null || req.password() == null || req.email() == null) {
-            throw new DataAccessException("bad request");
-        }
     }
 }
