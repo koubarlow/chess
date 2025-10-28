@@ -17,12 +17,14 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     public UserData createUser(UserData userData) throws Exception {
+        var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
+
         return new UserData("", "", "");
     }
 
     public void clearUsers() throws Exception {
         var statement = "TRUNCATE user";
-        executeUpdate(statement)
+        executeUpdate(statement);
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
