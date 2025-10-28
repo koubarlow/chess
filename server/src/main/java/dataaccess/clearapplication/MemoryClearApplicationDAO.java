@@ -1,4 +1,8 @@
-package dataaccess;
+package dataaccess.clearapplication;
+
+import dataaccess.auth.AuthDAO;
+import dataaccess.game.GameDAO;
+import dataaccess.user.UserDAO;
 
 public class MemoryClearApplicationDAO implements ClearApplicationDAO {
 

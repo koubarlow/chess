@@ -1,5 +1,6 @@
-package dataaccess;
+package dataaccess.auth;
 
+import dataaccess.BaseDAO;
 import model.AuthData;
 import model.LoginRequest;
 import model.UserData;

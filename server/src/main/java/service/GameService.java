@@ -1,6 +1,9 @@
 package service;
 
-import dataaccess.*;
+import dataaccess.auth.AuthDAO;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.UnauthorizedException;
+import dataaccess.game.GameDAO;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;

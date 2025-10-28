@@ -1,6 +1,6 @@
 package service;
 
-import dataaccess.BadRequestException;
+import dataaccess.exceptions.BadRequestException;
 import model.AuthData;
 import model.RegisterRequest;
 import org.junit.jupiter.api.*;

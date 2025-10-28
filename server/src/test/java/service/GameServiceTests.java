@@ -1,7 +1,11 @@
 package service;
 
 import chess.ChessGame;
-import dataaccess.*;
+import dataaccess.auth.MemoryAuthDAO;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.game.MemoryGameDAO;
+import dataaccess.user.MemoryUserDAO;
 import model.*;
 import org.junit.jupiter.api.*;
 

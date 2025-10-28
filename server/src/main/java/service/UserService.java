@@ -1,7 +1,9 @@
 package service;
 
-import dataaccess.*;
-import io.javalin.http.Context;
+import dataaccess.auth.AuthDAO;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.user.UserDAO;
 import model.*;
 
 public class UserService {

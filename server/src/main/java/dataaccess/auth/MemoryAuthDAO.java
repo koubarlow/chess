@@ -1,11 +1,12 @@
-package dataaccess;
+package dataaccess.auth;
 
+import dataaccess.BaseDAO;
+import dataaccess.exceptions.UnauthorizedException;
 import model.AuthData;
 import model.LoginRequest;
 import model.UserData;
 
 import java.util.HashMap;
-import java.util.Map;
 import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO {

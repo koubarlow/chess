@@ -1,9 +1,8 @@
 package service;
 
-import dataaccess.AuthDAO;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.UserDAO;
+import dataaccess.auth.AuthDAO;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.user.UserDAO;
 import model.*;
 
 public class AuthService {

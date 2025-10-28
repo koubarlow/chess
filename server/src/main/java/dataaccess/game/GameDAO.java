@@ -1,5 +1,6 @@
-package dataaccess;
+package dataaccess.game;
 
+import dataaccess.BaseDAO;
 import model.*;
 
 public interface GameDAO extends BaseDAO {

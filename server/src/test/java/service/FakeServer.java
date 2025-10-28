@@ -1,10 +1,11 @@
 package service;
 
-import dataaccess.*;
-import server.ClearApplicationServerHelper;
-import server.GameServerHelper;
-import server.SessionServerHelper;
-import server.UserServerHelper;
+import dataaccess.auth.AuthDAO;
+import dataaccess.auth.MemoryAuthDAO;
+import dataaccess.game.GameDAO;
+import dataaccess.game.MemoryGameDAO;
+import dataaccess.user.MemoryUserDAO;
+import dataaccess.user.UserDAO;
 
 public class FakeServer {
 

@@ -1,5 +1,6 @@
-package dataaccess;
+package dataaccess.user;
 
+import dataaccess.BaseDAO;
 import model.UserData;
 
 public interface UserDAO extends BaseDAO {

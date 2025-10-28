@@ -1,13 +1,11 @@
 package server;
 
 import com.google.gson.Gson;
-import dataaccess.BadRequestException;
-import dataaccess.DataAccessException;
-import dataaccess.UnauthorizedException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
 import service.AuthService;
-import service.UserService;
 
 public class SessionServerHelper {
 

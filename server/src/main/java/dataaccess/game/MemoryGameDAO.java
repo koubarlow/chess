@@ -1,13 +1,15 @@
-package dataaccess;
+package dataaccess.game;
 
 import chess.ChessGame;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
 import model.JoinGameRequest;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 public class MemoryGameDAO implements GameDAO {
 

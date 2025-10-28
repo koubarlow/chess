@@ -1,7 +1,6 @@
 package service;
 
-import dataaccess.ClearApplicationDAO;
-import dataaccess.DataAccessException;
+import dataaccess.clearapplication.ClearApplicationDAO;
 
 public class ClearApplicationService {
 

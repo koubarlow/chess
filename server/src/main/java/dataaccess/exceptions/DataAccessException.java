@@ -1,16 +1,17 @@
-package dataaccess;
+package dataaccess.exceptions;
 
 import com.google.gson.Gson;
+
 import java.util.Map;
 
 /**
  * Indicates there was an error connecting to the database
  */
-public class BadRequestException extends Exception {
-    public BadRequestException(String message) {
+public class DataAccessException extends Exception{
+    public DataAccessException(String message) {
         super(message);
     }
-    public BadRequestException(String message, Throwable ex) {
+    public DataAccessException(String message, Throwable ex) {
         super(message, ex);
     }
 

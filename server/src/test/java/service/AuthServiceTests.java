@@ -1,9 +1,7 @@
 package service;
 
-import dataaccess.BadRequestException;
-import dataaccess.MemoryAuthDAO;
-import dataaccess.MemoryUserDAO;
-import dataaccess.UnauthorizedException;
+import dataaccess.user.MemoryUserDAO;
+import dataaccess.exceptions.UnauthorizedException;
 import model.*;
 import org.junit.jupiter.api.*;
 
