@@ -13,13 +13,27 @@ public class MySqlUserDAO implements UserDAO {
     }
 
     public UserData getUser(String username) throws Exception {
-        return new UserData("", "", "");
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT username, password, email FROM user WHERE username=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setString(1, username);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readUserData(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+
+        return null;
     }
 
     public UserData createUser(UserData userData) throws Exception {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
-
-        return new UserData("", "", "");
+        String username = executeUpdate(statement, userData.username(), userData.password(), userData.email());
+        return new UserData(username, userData.password(), userData.email());
     }
 
     public void clearUsers() throws Exception {
@@ -27,22 +41,28 @@ public class MySqlUserDAO implements UserDAO {
         executeUpdate(statement);
     }
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
+    private UserData readUserData(ResultSet rs) throws SQLException {
+        var username = rs.getString("username");
+        var password = rs.getString("password");
+        var email = rs.getString("email");
+        return new UserData(username, password, email);
+    }
+
+    private String executeUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
                     Object param = params[i];
                     if (param instanceof String p) ps.setString(i+1, p);
-                    else if (param instanceof Integer p) ps.setInt(i+1, p);
                 }
                 ps.executeUpdate();
 
                 ResultSet rs = ps.getGeneratedKeys();
                 if (rs.next()) {
-                    return rs.getInt(1);
+                    return rs.getString(1);
                 }
 
-                return 0;
+                return "";
             }
         } catch (SQLException e) {
             throw new DataAccessException(String.format("unable to update database: %s, %s", statement, e.getMessage()));
@@ -52,12 +72,10 @@ public class MySqlUserDAO implements UserDAO {
     private final String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS user (
-                'id' int NOT NULL AUTO_INCREMENT,
                 'username' varchar(256) NOT NULL,
                 'password' varchar(256) NOT NULL,
                 'email' varchar(256) NOT NULL,
-                PRIMARY KEY ('id'),
-                INDEX(username),
+                PRIMARY KEY ('username'),
                 INDEX(email)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """

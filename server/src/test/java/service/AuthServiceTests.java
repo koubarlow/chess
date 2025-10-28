@@ -9,14 +9,14 @@ import java.util.HashMap;
 
 public class AuthServiceTests {
 
-    private static FakeServer fakeServer;
+    private static TestMemoryServer testMemoryServer;
 
     @BeforeAll
     public static void init() {
 
         HashMap<String, UserData> users = new HashMap<>();
         users.put("bill", new UserData("bill", "pass", "bill@test.com"));
-        fakeServer = new FakeServer(new MemoryUserDAO(users));
+        testMemoryServer = new TestMemoryServer(new MemoryUserDAO(users));
     }
 
     @Test
@@ -24,8 +24,8 @@ public class AuthServiceTests {
     @DisplayName("Login Success")
     public void loginSuccess() throws Exception {
         LoginRequest fakeLoginRequest = new LoginRequest("bill", "pass");
-        AuthData authenticatedUser = fakeServer.fakeAuthService.login(fakeLoginRequest);
-        Assertions.assertEquals("bill", fakeServer.fakeUserService.getUser(authenticatedUser.username()).username(),
+        AuthData authenticatedUser = testMemoryServer.fakeAuthService.login(fakeLoginRequest);
+        Assertions.assertEquals("bill", testMemoryServer.fakeUserService.getUser(authenticatedUser.username()).username(),
                 "username did not match logged-in user");
     }
 
@@ -34,7 +34,7 @@ public class AuthServiceTests {
     @DisplayName("Login wrong password")
     public void loginFailure() {
         LoginRequest fakeLoginRequest = new LoginRequest("bill", "pass!!!");
-        Assertions.assertThrows(UnauthorizedException.class, () -> fakeServer.fakeAuthService.login(fakeLoginRequest));
+        Assertions.assertThrows(UnauthorizedException.class, () -> testMemoryServer.fakeAuthService.login(fakeLoginRequest));
     }
 
     @Test
@@ -42,9 +42,9 @@ public class AuthServiceTests {
     @DisplayName("Logout success")
     public void logoutSuccess() throws Exception {
         LoginRequest fakeLoginRequest = new LoginRequest("bill", "pass");
-        AuthData authenticatedUser = fakeServer.fakeAuthService.login(fakeLoginRequest);
+        AuthData authenticatedUser = testMemoryServer.fakeAuthService.login(fakeLoginRequest);
         LogoutRequest logoutRequest = new LogoutRequest(authenticatedUser.authToken());
-        Assertions.assertDoesNotThrow(() -> fakeServer.fakeAuthService.logout(logoutRequest));
+        Assertions.assertDoesNotThrow(() -> testMemoryServer.fakeAuthService.logout(logoutRequest));
     }
 
     @Test
@@ -52,6 +52,6 @@ public class AuthServiceTests {
     @DisplayName("Logout unauthorized")
     public void logoutFailure() {
         LogoutRequest logoutRequest = new LogoutRequest("12345");
-        Assertions.assertThrows(UnauthorizedException.class, () -> fakeServer.fakeAuthService.logout(logoutRequest));
+        Assertions.assertThrows(UnauthorizedException.class, () -> testMemoryServer.fakeAuthService.logout(logoutRequest));
     }
 }

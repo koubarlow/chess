@@ -7,13 +7,13 @@ import dataaccess.game.MemoryGameDAO;
 import dataaccess.user.MemoryUserDAO;
 import dataaccess.user.UserDAO;
 
-public class FakeServer {
+public class TestMemoryServer {
 
     UserService fakeUserService;
     AuthService fakeAuthService;
     GameService fakeGameService;
 
-    public FakeServer() {
+    public TestMemoryServer() {
         UserDAO fakeMemoryUserDAO = new MemoryUserDAO();
         AuthDAO fakeMemoryAuthDAO = new MemoryAuthDAO();
         GameDAO fakeMemoryGameDAO = new MemoryGameDAO();
@@ -23,7 +23,7 @@ public class FakeServer {
         this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO);
     }
 
-    public FakeServer(UserDAO userDAO) {
+    public TestMemoryServer(UserDAO userDAO) {
         AuthDAO fakeMemoryAuthDAO = new MemoryAuthDAO();
         GameDAO fakeMemoryGameDAO = new MemoryGameDAO();
 
@@ -32,7 +32,7 @@ public class FakeServer {
         this.fakeGameService = new GameService(fakeMemoryGameDAO, fakeMemoryAuthDAO);
     }
 
-    public FakeServer(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
+    public TestMemoryServer(UserDAO userDAO, AuthDAO authDAO, GameDAO gameDAO) {
         this.fakeAuthService = new AuthService(userDAO, authDAO);
         this.fakeUserService = new UserService(userDAO, authDAO);
         this.fakeGameService = new GameService(gameDAO, authDAO);

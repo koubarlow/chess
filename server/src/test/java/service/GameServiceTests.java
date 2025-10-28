@@ -13,7 +13,7 @@ import java.util.HashMap;
 
 public class GameServiceTests {
 
-    private static FakeServer fakeServer;
+    private static TestMemoryServer testMemoryServer;
 
     @BeforeAll
     public static void init() {
@@ -32,7 +32,7 @@ public class GameServiceTests {
         GameData fakeGameData2 = new GameData(300, null, null, "playWithMee", new ChessGame());
         games.put(300, fakeGameData2);
 
-        fakeServer = new FakeServer(new MemoryUserDAO(users), new MemoryAuthDAO(sessions), new MemoryGameDAO(games));
+        testMemoryServer = new TestMemoryServer(new MemoryUserDAO(users), new MemoryAuthDAO(sessions), new MemoryGameDAO(games));
     }
 
     // create game
@@ -41,7 +41,7 @@ public class GameServiceTests {
     @DisplayName("Create Game Success")
     public void createGameSuccess() {
         CreateGameRequest createGameRequest = new CreateGameRequest("yay");
-        Assertions.assertDoesNotThrow(() -> fakeServer.fakeGameService.createGame("123456789", createGameRequest),
+        Assertions.assertDoesNotThrow(() -> testMemoryServer.fakeGameService.createGame("123456789", createGameRequest),
                 "encountered an error while create game");
     }
 
@@ -50,7 +50,7 @@ public class GameServiceTests {
     @DisplayName("Create Game Failure")
     public void createGameFailure() {
         CreateGameRequest createGameRequest = new CreateGameRequest(null);
-        Assertions.assertThrows(BadRequestException.class, () -> fakeServer.fakeGameService.createGame("123456789", createGameRequest),
+        Assertions.assertThrows(BadRequestException.class, () -> testMemoryServer.fakeGameService.createGame("123456789", createGameRequest),
                 "did not encounter an error while create game");
     }
 
@@ -60,8 +60,8 @@ public class GameServiceTests {
     @DisplayName("List Game Success")
     public void listCreatedGameSuccess() throws Exception {
         CreateGameRequest createGameRequest = new CreateGameRequest("yay2");
-        GameData newGame = fakeServer.fakeGameService.createGame("123456789", createGameRequest);
-        GameList games = fakeServer.fakeGameService.listGames("123456789");
+        GameData newGame = testMemoryServer.fakeGameService.createGame("123456789", createGameRequest);
+        GameList games = testMemoryServer.fakeGameService.listGames("123456789");
         Assertions.assertTrue(games.contains(newGame));
     }
 
@@ -70,7 +70,7 @@ public class GameServiceTests {
     @DisplayName("List Game Not Found")
     public void listGameFailure() throws Exception {
         GameData gameThatDoesntExist = new GameData(298, null, null, "playyy", new ChessGame());
-        GameList games = fakeServer.fakeGameService.listGames("123456789");
+        GameList games = testMemoryServer.fakeGameService.listGames("123456789");
         Assertions.assertFalse(games.contains(gameThatDoesntExist));
     }
 
@@ -80,8 +80,8 @@ public class GameServiceTests {
     @DisplayName("Join Game Success")
     public void joinGameSuccess() throws Exception {
         JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 300, "john");
-        fakeServer.fakeGameService.joinGame("123456789", joinGameRequest);
-        GameList games = fakeServer.fakeGameService.listGames("123456789");
+        testMemoryServer.fakeGameService.joinGame("123456789", joinGameRequest);
+        GameList games = testMemoryServer.fakeGameService.listGames("123456789");
         GameData expected = new GameData(300, "john", null, "playWithMee", new ChessGame());
         Assertions.assertEquals(expected, games.getLast());
     }
@@ -91,8 +91,8 @@ public class GameServiceTests {
     @DisplayName("Join Game Failure")
     public void joinGameAlreadyTaken() throws Exception {
         JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "john");
-        fakeServer.fakeGameService.joinGame("123456789", joinGameRequest);
+        testMemoryServer.fakeGameService.joinGame("123456789", joinGameRequest);
         JoinGameRequest joinGameRequest2 = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "kip");
-        Assertions.assertThrows(AlreadyTakenException.class, () -> fakeServer.fakeGameService.joinGame("123459876", joinGameRequest2));
+        Assertions.assertThrows(AlreadyTakenException.class, () -> testMemoryServer.fakeGameService.joinGame("123459876", joinGameRequest2));
     }
 }

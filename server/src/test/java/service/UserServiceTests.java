@@ -7,11 +7,11 @@ import org.junit.jupiter.api.*;
 
 public class UserServiceTests {
 
-    private static FakeServer fakeServer;
+    private static TestMemoryServer testMemoryServer;
 
     @BeforeAll
     public static void init() {
-        fakeServer = new FakeServer();
+        testMemoryServer = new TestMemoryServer();
     }
 
     @Test
@@ -20,8 +20,8 @@ public class UserServiceTests {
     public void createUserSuccess() throws Exception {
         //submit register request
         RegisterRequest fakeRegisterRequest = new RegisterRequest("kou", "12345", "kou@test.com");
-        AuthData newUser = fakeServer.fakeUserService.register(fakeRegisterRequest);
-        Assertions.assertEquals("kou", fakeServer.fakeUserService.getUser(newUser.username()).username(),
+        AuthData newUser = testMemoryServer.fakeUserService.register(fakeRegisterRequest);
+        Assertions.assertEquals("kou", testMemoryServer.fakeUserService.getUser(newUser.username()).username(),
                 "username did not match register user");
     }
 
@@ -31,7 +31,7 @@ public class UserServiceTests {
     public void createUserFail() {
         //submit register request
         RegisterRequest fakeRegisterRequest = new RegisterRequest(null, "12345", "kou@test.com");
-        Assertions.assertThrows(BadRequestException.class, () -> fakeServer.fakeUserService.register(fakeRegisterRequest));
+        Assertions.assertThrows(BadRequestException.class, () -> testMemoryServer.fakeUserService.register(fakeRegisterRequest));
     }
 
     @Test
@@ -39,9 +39,9 @@ public class UserServiceTests {
     @DisplayName("GetUser success")
     public void getUserSuccess() throws Exception {
         RegisterRequest fakeRegisterRequest = new RegisterRequest("ben", "54321", "ben@test.com");
-        AuthData newUser = fakeServer.fakeUserService.register(fakeRegisterRequest);
+        AuthData newUser = testMemoryServer.fakeUserService.register(fakeRegisterRequest);
 
-        Assertions.assertEquals("ben", fakeServer.fakeUserService.getUser(newUser.username()).username(),
+        Assertions.assertEquals("ben", testMemoryServer.fakeUserService.getUser(newUser.username()).username(),
                 "get user not success");
     }
 
@@ -49,6 +49,6 @@ public class UserServiceTests {
     @Order(4)
     @DisplayName("GetUser fail no username")
     public void getUserFail() {
-        Assertions.assertThrows(BadRequestException.class, () -> fakeServer.fakeUserService.getUser(null));
+        Assertions.assertThrows(BadRequestException.class, () -> testMemoryServer.fakeUserService.getUser(null));
     }
 }
