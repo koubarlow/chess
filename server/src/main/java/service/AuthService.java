@@ -20,7 +20,7 @@ public class AuthService {
             throw new BadRequestException("Error: bad request");
         }
         UserData existingUser = userDAO.getUser(loginRequest.username());
-        return this.authDAO.login(loginRequest, existingUser);
+        return this.authDAO.createAuth(loginRequest, existingUser);
     }
 
     public void logout(LogoutRequest logoutRequest) throws Exception {

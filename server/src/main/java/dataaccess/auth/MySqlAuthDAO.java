@@ -1,16 +1,38 @@
 package dataaccess.auth;
 
+import dataaccess.BaseDAO;
 import dataaccess.DatabaseManager;
 import dataaccess.exceptions.DataAccessException;
+import dataaccess.exceptions.UnauthorizedException;
 import model.AuthData;
+import model.LoginRequest;
 import model.UserData;
 
 import java.sql.*;
 
-public class MySqlAuthDAO {
+public class MySqlAuthDAO implements AuthDAO {
 
     public MySqlAuthDAO() throws DataAccessException {
         configureDatabase();
+    }
+
+    public AuthData createAuth(LoginRequest loginRequest, UserData existingUser) throws Exception {
+        if (authenticateUser(loginRequest, existingUser)) {
+            AuthData authData = new AuthData(BaseDAO.generateId(), loginRequest.username());
+            var statement = "INSERT INTO user (authToken, username) VALUES (?, ?)";
+            String authToken = executeUpdate(statement, authData.authToken(), authData.username());
+            return new AuthData(authToken, authData.username());
+        }
+
+        throw new UnauthorizedException("Error: unauthorized");
+    }
+
+    public boolean sessionExistsForAuthToken(String authToken) throws Exception {
+        return getAuth(authToken) != null;
+    }
+
+    public String getUsername(String authToken) throws Exception {
+        return getAuth(authToken).username();
     }
 
     public AuthData getAuth(String authToken) throws Exception {
@@ -31,10 +53,9 @@ public class MySqlAuthDAO {
         return null;
     }
 
-    public AuthData createAuth(AuthData authData) throws Exception {
-        var statement = "INSERT INTO user (authToken, username) VALUES (?, ?)";
-        String authToken = executeUpdate(statement, authData.authToken(), authData.username());
-        return new AuthData(authToken, authData.username());
+    public void logout(String authToken) throws Exception {
+        var statement = "DELETE FROM auth WHERE authToken=?";
+        executeUpdate(statement, authToken);
     }
 
     public void clearAuth() throws Exception {
