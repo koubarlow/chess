@@ -19,9 +19,9 @@ public class MySqlAuthDAO implements AuthDAO {
     public AuthData createAuth(LoginRequest loginRequest, UserData existingUser) throws Exception {
         if (authenticateUser(loginRequest, existingUser)) {
             AuthData authData = new AuthData(BaseDAO.generateId(), loginRequest.username());
-            var statement = "INSERT INTO user (authToken, username) VALUES (?, ?)";
-            String authToken = executeUpdate(statement, authData.authToken(), authData.username());
-            return new AuthData(authToken, authData.username());
+            var statement = "INSERT INTO auth (authToken, username) VALUES (?, ?)";
+            executeUpdate(statement, authData.authToken(), authData.username());
+            return authData;
         }
 
         throw new UnauthorizedException("Error: unauthorized");
@@ -92,10 +92,10 @@ public class MySqlAuthDAO implements AuthDAO {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS auth (
-                'authToken' varchar(256) NOT NULL,
-                'username' varchar(256) NOT NULL,
-                PRIMARY KEY ('authToken'),
+            CREATE TABLE IF NOT EXISTS  auth (
+                `authToken` varchar(256) NOT NULL,
+                `username` varchar(256) NOT NULL,
+                PRIMARY KEY (`authToken`),
                 INDEX(username)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """

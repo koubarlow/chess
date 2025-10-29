@@ -2,11 +2,14 @@ package server;
 
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MemoryAuthDAO;
+import dataaccess.auth.MySqlAuthDAO;
 import dataaccess.clearapplication.ClearApplicationDAO;
 import dataaccess.clearapplication.MemoryClearApplicationDAO;
+import dataaccess.exceptions.DataAccessException;
 import dataaccess.game.GameDAO;
 import dataaccess.game.MemoryGameDAO;
 import dataaccess.user.MemoryUserDAO;
+import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
 import io.javalin.*;
 import service.AuthService;
@@ -20,14 +23,25 @@ public class Server {
     public static String authTokenHeader = "authorization";
 
     public Server() {
-        UserDAO memoryUserDAO = new MemoryUserDAO();
-        AuthDAO memoryAuthDAO = new MemoryAuthDAO();
-        GameDAO memoryGameDAO = new MemoryGameDAO();
-        ClearApplicationDAO clearApplicationDAO = new MemoryClearApplicationDAO(memoryGameDAO, memoryUserDAO, memoryAuthDAO);
+        UserDAO userDAO = new MemoryUserDAO();
+        AuthDAO authDAO = new MemoryAuthDAO();
+        GameDAO gameDAO = new MemoryGameDAO();
+        ClearApplicationDAO clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
 
-        UserService userService = new UserService(memoryUserDAO, memoryAuthDAO);
-        AuthService authService = new AuthService(memoryUserDAO, memoryAuthDAO);
-        GameService gameService = new GameService(memoryGameDAO, memoryAuthDAO);
+        try {
+            userDAO = new MySqlUserDAO();
+            authDAO = new MySqlAuthDAO();
+            gameDAO = new MemoryGameDAO();
+            clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
+            userDAO.clearUsers();
+            authDAO.clearAuth();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        UserService userService = new UserService(userDAO, authDAO);
+        AuthService authService = new AuthService(userDAO, authDAO);
+        GameService gameService = new GameService(gameDAO, authDAO);
         ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);
 
         UserServerHelper userServerHelper = new UserServerHelper(userService);

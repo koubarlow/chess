@@ -5,6 +5,7 @@ import dataaccess.exceptions.UnauthorizedException;
 import model.AuthData;
 import model.LoginRequest;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.util.Objects;
 
@@ -15,8 +16,8 @@ public interface AuthDAO extends BaseDAO {
         String username = request.username();
         String password = request.password();
 
-        if (existingUser == null) { throw new UnauthorizedException("Error: unauthorized"); }
-        return Objects.equals(existingUser.username(), username) && Objects.equals(existingUser.password(), password);
+        if (existingUser == null || ! Objects.equals(existingUser.username(), username)) { throw new UnauthorizedException("Error: unauthorized"); }
+        return BCrypt.checkpw(password, existingUser.password());
     }
     boolean sessionExistsForAuthToken(String authToken) throws Exception;
     String getUsername(String authToken) throws Exception;

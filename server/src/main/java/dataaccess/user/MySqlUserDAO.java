@@ -3,6 +3,7 @@ package dataaccess.user;
 import dataaccess.DatabaseManager;
 import dataaccess.exceptions.DataAccessException;
 import model.UserData;
+import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 
@@ -32,7 +33,8 @@ public class MySqlUserDAO implements UserDAO {
 
     public UserData createUser(UserData userData) throws Exception {
         var statement = "INSERT INTO user (username, password, email) VALUES (?, ?, ?)";
-        String username = executeUpdate(statement, userData.username(), userData.password(), userData.email());
+        String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
+        String username = executeUpdate(statement, userData.username(), hashedPassword, userData.email());
         return new UserData(username, userData.password(), userData.email());
     }
 
@@ -71,12 +73,12 @@ public class MySqlUserDAO implements UserDAO {
 
     private final String[] createStatements = {
             """
-            CREATE TABLE IF NOT EXISTS user (
-                'username' varchar(256) NOT NULL,
-                'password' varchar(256) NOT NULL,
-                'email' varchar(256) NOT NULL,
-                PRIMARY KEY ('username'),
-                INDEX(email)
+            CREATE TABLE IF NOT EXISTS  user (
+              `username` varchar(256) NOT NULL,
+              `password` varchar(256) NOT NULL,
+              `email` varchar(256) NOT NULL,
+              PRIMARY KEY (`username`),
+              INDEX(email)
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
