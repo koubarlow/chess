@@ -14,7 +14,8 @@ public class ClearApplicationServerHelper {
         try {
             clearApplicationService.clearApplication();
         } catch (DataAccessException e) {
-            throw new DataAccessException(e.getMessage());
+            context.json(e.toJson());
+            context.status(500);
         }
     }
 }

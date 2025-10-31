@@ -34,9 +34,6 @@ public class Server {
             authDAO = new MySqlAuthDAO();
             gameDAO = new MySqlGameDAO();
             clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
-            userDAO.clearUsers();
-            authDAO.clearAuth();
-            gameDAO.clearGames();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
