@@ -3,10 +3,13 @@ package dataaccess.game;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DatabaseManager;
+import dataaccess.exceptions.AlreadyTakenException;
+import dataaccess.exceptions.BadRequestException;
 import dataaccess.exceptions.DataAccessException;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
+import model.JoinGameRequest;
 
 import java.sql.*;
 
@@ -25,10 +28,27 @@ public class MySqlGameDAO implements GameDAO {
         return new GameData(id, null, null, createGameRequest.gameName(), new ChessGame());
     }
 
+    public GameData getGame(int id) throws Exception {
+        try (Connection conn = DatabaseManager.getConnection()) {
+            var statement = "SELECT id, whiteUsername, blackUsername, gameName, json FROM game where id=?";
+            try (PreparedStatement ps = conn.prepareStatement(statement)) {
+                ps.setInt(1, id);
+                try (ResultSet rs = ps.executeQuery()) {
+                    if (rs.next()) {
+                        return readGame(rs);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
+        }
+        return null;
+    }
+
     public GameList listGames() throws Exception {
         var result = new GameList();
         try (Connection conn = DatabaseManager.getConnection()) {
-            var statement = "SELECT id, json FROM game";
+            var statement = "SELECT id, whiteUsername, blackUsername, gameName, json FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
                 try (ResultSet rs = ps.executeQuery()) {
                     while (rs.next()) {
@@ -42,8 +62,37 @@ public class MySqlGameDAO implements GameDAO {
         return result;
     }
 
-    public void joinGame() throws Exception {
+    public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
+        if (joinGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
+        int gameId = joinGameRequest.gameID();
+        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
+        if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
+        GameData game = getGame(gameId);
+        if (game == null) { throw new DataAccessException("Error: game does not exist"); }
 
+        String gameName = game.gameName();
+        String whiteUsername = game.whiteUsername();
+        String blackUsername = game.blackUsername();
+        ChessGame chessGame = game.game();
+
+        if (teamColor == ChessGame.TeamColor.WHITE) {
+            if (whiteUsername == null) {
+                whiteUsername = username;
+            } else {
+                throw new AlreadyTakenException("Error: already taken");
+            }
+        } else {
+            if (blackUsername == null) {
+                blackUsername = username;
+            } else {
+                throw new AlreadyTakenException("Error: already taken");
+            }
+        }
+
+        String jsonChessGame = new Gson().toJson(chessGame);
+
+        var statement = "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, json=?";
+        executeUpdate(statement, whiteUsername, blackUsername, gameName, jsonChessGame);
     }
 
     public void clearGames() throws Exception {
@@ -53,9 +102,12 @@ public class MySqlGameDAO implements GameDAO {
 
     private GameData readGame(ResultSet rs) throws Exception {
         var id = rs.getInt("id");
+        var whiteUsername = rs.getString("whiteUsername");
+        var blackUsername = rs.getString("blackUsername");
+        var gameName = rs.getString("gameName");
         var json = rs.getString("json");
-        GameData game = new Gson().fromJson(json, GameData.class);
-        return game.setId(id);
+        ChessGame chessGame = new Gson().fromJson(json, ChessGame.class);
+        return new GameData(id, whiteUsername, blackUsername, gameName, chessGame);
     }
 
     private int executeUpdate(String statement, Object... params) throws DataAccessException {
