@@ -93,8 +93,8 @@ public class MySqlGameDAO implements GameDAO {
 
         String jsonChessGame = new Gson().toJson(chessGame);
 
-        var statement = "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, json=?";
-        executeUpdate(statement, whiteUsername, blackUsername, gameName, jsonChessGame);
+        var statement = "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, json=? WHERE id=?";
+        executeUpdate(statement, whiteUsername, blackUsername, gameName, jsonChessGame, gameId);
     }
 
     public void clearGames() throws Exception {
