@@ -8,6 +8,7 @@ import dataaccess.clearapplication.MemoryClearApplicationDAO;
 import dataaccess.exceptions.DataAccessException;
 import dataaccess.game.GameDAO;
 import dataaccess.game.MemoryGameDAO;
+import dataaccess.game.MySqlGameDAO;
 import dataaccess.user.MemoryUserDAO;
 import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
@@ -31,10 +32,11 @@ public class Server {
         try {
             userDAO = new MySqlUserDAO();
             authDAO = new MySqlAuthDAO();
-            gameDAO = new MemoryGameDAO();
+            gameDAO = new MySqlGameDAO();
             clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
             userDAO.clearUsers();
             authDAO.clearAuth();
+            gameDAO.clearGames();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

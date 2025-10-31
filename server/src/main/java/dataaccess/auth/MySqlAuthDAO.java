@@ -54,8 +54,12 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     public void logout(String authToken) throws Exception {
-        var statement = "DELETE FROM auth WHERE authToken=?";
-        executeUpdate(statement, authToken);
+        if (getAuth(authToken) != null) {
+            var statement = "DELETE FROM auth WHERE authToken=?";
+            executeUpdate(statement, authToken);
+            return;
+        }
+        throw new UnauthorizedException("Error: unauthorized");
     }
 
     public void clearAuth() throws Exception {

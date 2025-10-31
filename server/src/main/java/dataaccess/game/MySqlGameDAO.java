@@ -12,6 +12,8 @@ import model.GameList;
 import model.JoinGameRequest;
 
 import java.sql.*;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import static java.sql.Types.NULL;
 
@@ -46,7 +48,7 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public GameList listGames() throws Exception {
-        var result = new GameList();
+        Collection<GameData> result = new ArrayList<>();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT id, whiteUsername, blackUsername, gameName, json FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -59,7 +61,7 @@ public class MySqlGameDAO implements GameDAO {
         } catch (Exception e) {
             throw new DataAccessException(String.format("Unable to read data: %s", e.getMessage()));
         }
-        return result;
+        return new GameList(result);
     }
 
     public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
