@@ -3,6 +3,7 @@ package server;
 import com.google.gson.Gson;
 import dataaccess.exceptions.AlreadyTakenException;
 import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
 import io.javalin.http.Context;
 import model.AuthData;
 import model.RegisterRequest;
@@ -30,6 +31,9 @@ public class UserServerHelper {
         } catch (AlreadyTakenException e) {
             context.json(e.toJson());
             context.status(403);
+        } catch (DataAccessException e) {
+            context.json(e.toJson());
+            context.status(500);
         }
     }
 }

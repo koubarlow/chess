@@ -2,6 +2,7 @@ package server;
 
 import com.google.gson.Gson;
 import dataaccess.exceptions.BadRequestException;
+import dataaccess.exceptions.DataAccessException;
 import dataaccess.exceptions.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
@@ -28,6 +29,9 @@ public class SessionServerHelper {
         } catch (UnauthorizedException e) {
             context.json(e.toJson());
             context.status(401);
+        } catch (DataAccessException e) {
+            context.json(e.toJson());
+            context.status(500);
         }
     }
 
@@ -39,6 +43,9 @@ public class SessionServerHelper {
         } catch (UnauthorizedException e) {
             context.json(e.toJson());
             context.status(401);
+        } catch (DataAccessException e) {
+            context.json(e.toJson());
+            context.status(500);
         }
     }
 }
