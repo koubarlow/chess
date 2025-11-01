@@ -2,11 +2,11 @@ package service;
 
 import dataaccess.clearapplication.ClearApplicationDAO;
 
-public class ClearApplicationService {
+public class ClearService {
 
     private final ClearApplicationDAO clearApplicationDAO;
 
-    public ClearApplicationService(ClearApplicationDAO clearApplicationDAO) {
+    public ClearService(ClearApplicationDAO clearApplicationDAO) {
         this.clearApplicationDAO = clearApplicationDAO;
     }
 

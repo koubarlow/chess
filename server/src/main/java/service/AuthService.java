@@ -26,4 +26,8 @@ public class AuthService {
     public void logout(LogoutRequest logoutRequest) throws Exception {
         this.authDAO.logout(logoutRequest.authToken());
     }
+
+    public void clearAuth() throws Exception {
+        this.authDAO.clearAuth();
+    }
 }

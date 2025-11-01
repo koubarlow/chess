@@ -15,8 +15,13 @@ public class AuthServiceTests {
     public static void init() {
 
         HashMap<String, UserData> users = new HashMap<>();
-        users.put("bill", new UserData("bill", "pass", "bill@test.com"));
         testMemoryServer = new TestMemoryServer(new MemoryUserDAO(users));
+        try {
+            testMemoryServer.fakeUserService.register(new RegisterRequest("bill", "pass", "bill@test.com"));
+            testMemoryServer.fakeAuthService.clearAuth();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Test

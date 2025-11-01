@@ -32,4 +32,8 @@ public class UserService {
         if (username == null) { throw new BadRequestException("Error: bad request"); }
         return this.userDAO.getUser(username);
     }
+
+    public void clearUsers() throws Exception {
+        this.userDAO.clearUsers();
+    }
 }

@@ -5,7 +5,6 @@ import dataaccess.auth.MemoryAuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
 import dataaccess.clearapplication.ClearApplicationDAO;
 import dataaccess.clearapplication.MemoryClearApplicationDAO;
-import dataaccess.exceptions.DataAccessException;
 import dataaccess.game.GameDAO;
 import dataaccess.game.MemoryGameDAO;
 import dataaccess.game.MySqlGameDAO;
@@ -14,7 +13,7 @@ import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
 import io.javalin.*;
 import service.AuthService;
-import service.ClearApplicationService;
+import service.ClearService;
 import service.GameService;
 import service.UserService;
 
@@ -41,12 +40,12 @@ public class Server {
         UserService userService = new UserService(userDAO, authDAO);
         AuthService authService = new AuthService(userDAO, authDAO);
         GameService gameService = new GameService(gameDAO, authDAO);
-        ClearApplicationService clearApplicationService = new ClearApplicationService(clearApplicationDAO);
+        ClearService clearService = new ClearService(clearApplicationDAO);
 
         UserServerHelper userServerHelper = new UserServerHelper(userService);
         SessionServerHelper sessionServerHelper = new SessionServerHelper(authService);
         GameServerHelper gameServerHelper = new GameServerHelper(gameService);
-        ClearApplicationServerHelper clearApplicationServerHelper = new ClearApplicationServerHelper(clearApplicationService);
+        ClearServerHelper clearServerHelper = new ClearServerHelper(clearService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", userServerHelper::register)
@@ -55,7 +54,7 @@ public class Server {
                 .post("/game", gameServerHelper::createGame)
                 .get("/game", gameServerHelper::listGames)
                 .put("/game", gameServerHelper::joinGame)
-                .delete("/db", clearApplicationServerHelper::clearApplication);
+                .delete("/db", clearServerHelper::clearApplication);
     }
 
     public int run(int desiredPort) {

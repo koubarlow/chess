@@ -44,4 +44,7 @@ public class GameService {
         }
     }
 
+    public void clearGames() throws Exception {
+        this.gameDAO.clearGames();
+    }
 }
