@@ -1,4 +1,4 @@
-package database;
+package dataaccess;
 
 import chess.ChessGame;
 import dataaccess.auth.MySqlAuthDAO;

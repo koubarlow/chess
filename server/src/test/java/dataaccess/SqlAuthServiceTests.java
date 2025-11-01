@@ -1,4 +1,4 @@
-package database;
+package dataaccess;
 
 import dataaccess.exceptions.UnauthorizedException;
 import dataaccess.user.MySqlUserDAO;
