@@ -1,5 +1,6 @@
 package dataaccess;
 
+import dataaccess.exceptions.DataAccessException;
 import dataaccess.exceptions.UnauthorizedException;
 import dataaccess.user.MySqlUserDAO;
 import model.*;
@@ -40,5 +41,19 @@ public class SqlAuthServiceTests {
     public void sqlLoginFailure() {
         LoginRequest testLoginRequest = new LoginRequest("a", "this is an incorrect password");
         Assertions.assertThrows(UnauthorizedException.class, () -> sqlServerTests.testAuthService.login(testLoginRequest));
+    }
+
+    @Test
+    @Order(3)
+    @DisplayName("Clear games")
+    public void sqlClearAuthSuccess() {
+        try {
+            sqlServerTests.testUserService.register(new RegisterRequest("e", "e!", "e@e"));
+            sqlServerTests.testUserService.register(new RegisterRequest("f", "f!", "f@f"));
+            sqlServerTests.testUserService.register(new RegisterRequest("g", "g!", "g@g"));
+            Assertions.assertDoesNotThrow(() -> sqlServerTests.testAuthService.clearAuth());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }

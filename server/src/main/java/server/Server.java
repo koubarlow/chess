@@ -3,8 +3,6 @@ package server;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MemoryAuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
-import dataaccess.clearapplication.ClearApplicationDAO;
-import dataaccess.clearapplication.MemoryClearApplicationDAO;
 import dataaccess.game.GameDAO;
 import dataaccess.game.MemoryGameDAO;
 import dataaccess.game.MySqlGameDAO;
@@ -13,7 +11,6 @@ import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
 import io.javalin.*;
 import service.AuthService;
-import service.ClearService;
 import service.GameService;
 import service.UserService;
 
@@ -26,13 +23,11 @@ public class Server {
         UserDAO userDAO = new MemoryUserDAO();
         AuthDAO authDAO = new MemoryAuthDAO();
         GameDAO gameDAO = new MemoryGameDAO();
-        ClearApplicationDAO clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
 
         try {
             userDAO = new MySqlUserDAO();
             authDAO = new MySqlAuthDAO();
             gameDAO = new MySqlGameDAO();
-            clearApplicationDAO = new MemoryClearApplicationDAO(gameDAO, userDAO, authDAO);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
@@ -40,12 +35,11 @@ public class Server {
         UserService userService = new UserService(userDAO, authDAO);
         AuthService authService = new AuthService(userDAO, authDAO);
         GameService gameService = new GameService(gameDAO, authDAO);
-        ClearService clearService = new ClearService(clearApplicationDAO);
 
         UserServerHelper userServerHelper = new UserServerHelper(userService);
         SessionServerHelper sessionServerHelper = new SessionServerHelper(authService);
         GameServerHelper gameServerHelper = new GameServerHelper(gameService);
-        ClearServerHelper clearServerHelper = new ClearServerHelper(clearService);
+        ClearServerHelper clearServerHelper = new ClearServerHelper(gameService, authService, userService);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", userServerHelper::register)

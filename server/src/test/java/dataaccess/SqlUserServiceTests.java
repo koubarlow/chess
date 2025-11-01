@@ -61,4 +61,18 @@ public class SqlUserServiceTests {
     public void sqlGetUserFail() {
         Assertions.assertThrows(BadRequestException.class, () -> sqlServerTests.testUserService.getUser(null));
     }
+
+    @Test
+    @Order(5)
+    @DisplayName("Clear users")
+    public void sqlClearUsersSuccess() {
+        try {
+            sqlServerTests.testUserService.register(new RegisterRequest("e", "e!", "e@e"));
+            sqlServerTests.testUserService.register(new RegisterRequest("f", "f!", "f@f"));
+            sqlServerTests.testUserService.register(new RegisterRequest("g", "g!", "g@g"));
+            Assertions.assertDoesNotThrow(() -> sqlServerTests.testUserService.clearUsers());
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

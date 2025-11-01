@@ -78,6 +78,8 @@ public class SqlGameServiceTests {
     @Order(5)
     @DisplayName("Join Game Success")
     public void sqlJoinGameSuccess() throws Exception {
+        sqlServerTests.testGameService.createGame(xAuthToken, new CreateGameRequest("testGameId1"));
+        sqlServerTests.testGameService.createGame(yAuthToken, new CreateGameRequest("testGameId2"));
         JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "y");
         sqlServerTests.testGameService.joinGame(yAuthToken, joinGameRequest);
         GameList games = sqlServerTests.testGameService.listGames(yAuthToken);
@@ -93,5 +95,17 @@ public class SqlGameServiceTests {
         sqlServerTests.testGameService.joinGame(xAuthToken, joinGameRequest);
         JoinGameRequest joinGameRequest2 = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, "z");
         Assertions.assertThrows(AlreadyTakenException.class, () -> sqlServerTests.testGameService.joinGame(xAuthToken, joinGameRequest2));
+    }
+
+    @Test
+    @Order(7)
+    @DisplayName("Clear games")
+    public void sqlClearGamesSuccess() {
+        try {
+            sqlServerTests.testGameService.clearGames();
+            Assertions.assertEquals(new GameList(), sqlServerTests.testGameService.listGames(xAuthToken));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 }
