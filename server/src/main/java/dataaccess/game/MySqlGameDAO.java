@@ -19,6 +19,22 @@ import static java.sql.Types.NULL;
 public class MySqlGameDAO implements GameDAO {
 
     public MySqlGameDAO() throws DataAccessException {
+        String[] createStatements = {
+                """
+            CREATE TABLE IF NOT EXISTS  game (
+                `id` int NOT NULL AUTO_INCREMENT,
+                `whiteUsername` varchar(256) DEFAULT NULL,
+                `blackUsername` varchar(256) DEFAULT NULL,
+                `gameName` varchar(256) NOT NULL,
+                `json` TEXT NOT NULL,
+                PRIMARY KEY (`id`),
+                INDEX(gameName),
+                INDEX(whiteUsername),
+                INDEX(blackUsername)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+            """
+        };
+
         configureDatabase(createStatements);
     }
 
@@ -114,20 +130,4 @@ public class MySqlGameDAO implements GameDAO {
             throw new DataAccessException(String.format("Error: unable to update database: %s, %s", statement, e.getMessage()));
         }
     }
-
-    String[] createStatements = {
-            """
-            CREATE TABLE IF NOT EXISTS  game (
-                `id` int NOT NULL AUTO_INCREMENT,
-                `whiteUsername` varchar(256) DEFAULT NULL,
-                `blackUsername` varchar(256) DEFAULT NULL,
-                `gameName` varchar(256) NOT NULL,
-                `json` TEXT NOT NULL,
-                PRIMARY KEY (`id`),
-                INDEX(gameName),
-                INDEX(whiteUsername),
-                INDEX(blackUsername)
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
-            """
-    };
 }
