@@ -7,7 +7,6 @@ import model.LoginRequest;
 import model.UserData;
 
 import java.util.HashMap;
-import java.util.Objects;
 
 public class MemoryAuthDAO implements AuthDAO {
 

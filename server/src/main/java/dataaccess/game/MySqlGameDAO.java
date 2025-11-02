@@ -3,7 +3,6 @@ package dataaccess.game;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import dataaccess.DatabaseManager;
-import dataaccess.exceptions.AlreadyTakenException;
 import dataaccess.exceptions.BadRequestException;
 import dataaccess.exceptions.DataAccessException;
 import model.CreateGameRequest;
@@ -20,13 +19,13 @@ import static java.sql.Types.NULL;
 public class MySqlGameDAO implements GameDAO {
 
     public MySqlGameDAO() throws DataAccessException {
-        configureDatabase();
+        configureDatabase(createStatements);
     }
 
     public GameData createGame(CreateGameRequest createGameRequest) throws Exception {
         var statement = "INSERT INTO game (whiteUsername, blackUsername, gameName, json) VALUES (?,?,?,?)";
         String jsonChessGame = new Gson().toJson(new ChessGame());
-        int id = executeUpdate(statement, null, null, createGameRequest.gameName(), jsonChessGame);
+        int id = executeGameUpdate(statement, null, null, createGameRequest.gameName(), jsonChessGame);
         return new GameData(id, null, null, createGameRequest.gameName(), new ChessGame());
     }
 
@@ -70,36 +69,17 @@ public class MySqlGameDAO implements GameDAO {
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
         if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
         GameData game = getGame(gameId);
-        if (game == null) { throw new DataAccessException("Error: game does not exist"); }
 
-        String gameName = game.gameName();
-        String whiteUsername = game.whiteUsername();
-        String blackUsername = game.blackUsername();
-        ChessGame chessGame = game.game();
-
-        if (teamColor == ChessGame.TeamColor.WHITE) {
-            if (whiteUsername == null) {
-                whiteUsername = username;
-            } else {
-                throw new AlreadyTakenException("Error: already taken");
-            }
-        } else {
-            if (blackUsername == null) {
-                blackUsername = username;
-            } else {
-                throw new AlreadyTakenException("Error: already taken");
-            }
-        }
-
-        String jsonChessGame = new Gson().toJson(chessGame);
+        GameData updatedGame = updateGame(game, gameId, teamColor, username);
+        String jsonChessGame = new Gson().toJson(updatedGame.game());
 
         var statement = "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, json=? WHERE id=?";
-        executeUpdate(statement, whiteUsername, blackUsername, gameName, jsonChessGame, gameId);
+        executeGameUpdate(statement, updatedGame.whiteUsername(), updatedGame.blackUsername(), updatedGame.gameName(), jsonChessGame, gameId);
     }
 
     public void clearGames() throws Exception {
         var statement = "TRUNCATE game";
-        executeUpdate(statement);
+        executeGameUpdate(statement);
     }
 
     private GameData readGame(ResultSet rs) throws Exception {
@@ -112,7 +92,7 @@ public class MySqlGameDAO implements GameDAO {
         return new GameData(id, whiteUsername, blackUsername, gameName, chessGame);
     }
 
-    private int executeUpdate(String statement, Object... params) throws DataAccessException {
+    private int executeGameUpdate(String statement, Object... params) throws DataAccessException {
         try (Connection conn = DatabaseManager.getConnection()) {
             try (PreparedStatement ps = conn.prepareStatement(statement, Statement.RETURN_GENERATED_KEYS)) {
                 for (int i = 0; i < params.length; i++) {
@@ -135,7 +115,7 @@ public class MySqlGameDAO implements GameDAO {
         }
     }
 
-    private final String[] createStatements = {
+    String[] createStatements = {
             """
             CREATE TABLE IF NOT EXISTS  game (
                 `id` int NOT NULL AUTO_INCREMENT,
@@ -150,17 +130,4 @@ public class MySqlGameDAO implements GameDAO {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
             """
     };
-
-    private void configureDatabase() throws DataAccessException {
-        DatabaseManager.createDatabase();
-        try (Connection conn = DatabaseManager.getConnection()) {
-            for (String statement: createStatements) {
-                try (var preparedStatement = conn.prepareStatement(statement)) {
-                    preparedStatement.executeUpdate();
-                }
-            }
-        } catch (SQLException ex) {
-            throw new DataAccessException(String.format("Error: unable to configure database: %s", ex.getMessage()));
-        }
-    }
 }

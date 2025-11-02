@@ -19,11 +19,10 @@ public class MemoryUserDAO implements UserDAO {
         return users.get(username);
     }
 
-    public UserData createUser(UserData userData) {
+    public void createUser(UserData userData) {
         String hashedPassword = BCrypt.hashpw(userData.password(), BCrypt.gensalt());
         UserData user = new UserData(userData.username(), hashedPassword, userData.email());
         users.put(user.username(), user);
-        return user;
     }
 
     public void clearUsers() {

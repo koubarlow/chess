@@ -1,9 +1,7 @@
 package dataaccess.game;
 
 import chess.ChessGame;
-import dataaccess.exceptions.AlreadyTakenException;
 import dataaccess.exceptions.BadRequestException;
-import dataaccess.exceptions.DataAccessException;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
@@ -39,29 +37,8 @@ public class MemoryGameDAO implements GameDAO {
         ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
         if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
         GameData game = games.get(gameId);
-        if (game == null) { throw new DataAccessException("Error: game does not exist"); }
 
-        String gameName = game.gameName();
-        String whiteUsername = game.whiteUsername();
-        String blackUsername = game.blackUsername();
-        ChessGame chessGame = game.game();
-
-        if (teamColor == ChessGame.TeamColor.WHITE) {
-            if (whiteUsername == null) {
-                whiteUsername = username;
-            } else {
-                throw new AlreadyTakenException("Error: already taken");
-            }
-        } else {
-            if (blackUsername == null) {
-                blackUsername = username;
-            } else {
-                throw new AlreadyTakenException("Error: already taken");
-            }
-        }
-
-        GameData updatedGame = new GameData(gameId, whiteUsername, blackUsername, gameName, chessGame);
-        games.put(gameId, updatedGame);
+        games.put(gameId, updateGame(game, gameId, teamColor, username));
     }
 
     public void clearGames() {
