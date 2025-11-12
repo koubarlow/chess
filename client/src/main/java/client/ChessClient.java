@@ -60,7 +60,7 @@ public class ChessClient {
                 case "create" -> createGame(params);
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
-                case "logout" -> logout(params);
+                case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -70,7 +70,7 @@ public class ChessClient {
     }
 
     public String register(String... params) throws Exception {
-        if (params.length >= 1) {
+        if (params.length >= 3) {
             state = State.SIGNEDIN;
             this.username = params[0];
             String password = params[1];
@@ -82,7 +82,8 @@ public class ChessClient {
     }
 
     public String login(String... params) throws Exception {
-        if (params.length >= 1) {
+        if (params.length >= 2) {
+            state = State.SIGNEDIN;
             this.username = params[0];
             String password = params[1];
             server.login(new LoginRequest(username, password));
@@ -113,7 +114,8 @@ public class ChessClient {
     }
 
     public String joinGame(String... params) throws Exception {
-        if (params.length >= 1) {
+        assertSignedIn();
+        if (params.length >= 2) {
             ChessGame.TeamColor teamColor = null;
             
             int gameId = Integer.parseInt(params[0]);
@@ -128,13 +130,13 @@ public class ChessClient {
         throw new Exception("Exception: <ID> <WHITE|BLACK>");
     }
 
-    public String logout(String... params) throws Exception {
-        if (params.length >= 1) {
-            state = State.SIGNEDOUT;
-            server.logout();
-            return String.format("You signed out. Thank you for playing, %s.", username);
-            this.username = null;
-        }
+    public String logout() throws Exception {
+        assertSignedIn();
+        state = State.SIGNEDOUT;
+        server.logout();
+        String usernameToSayGoodbyeTo = this.username;
+        this.username = null;
+        return String.format("You signed out. Thank you for playing, %s.", usernameToSayGoodbyeTo);
     }
 
     public String help() {
