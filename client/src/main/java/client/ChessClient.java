@@ -1,11 +1,11 @@
 package client;
 
-import model.CreateGameRequest;
-import model.LoginRequest;
-import model.RegisterRequest;
+import chess.ChessGame;
+import model.*;
 import server.ServerFacade;
 
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.Scanner;
 
 import static client.EscapeSequences.*;
@@ -80,8 +80,6 @@ public class ChessClient {
 
     public String login(String... params) throws Exception {
         if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
             server.login(new LoginRequest(params[0], params[1]));
             return String.format("You signed in as %s.", visitorName);
         }
@@ -90,8 +88,6 @@ public class ChessClient {
 
     public String createGame(String... params) throws Exception {
         if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
             server.createGame(new CreateGameRequest(params[0]));
             return String.format("You signed in as %s.", visitorName);
         }
@@ -100,9 +96,32 @@ public class ChessClient {
 
     public String listGames(String... params) throws Exception {
         if (params.length >= 1) {
-            state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
             server.listGames();
+            return String.format("You signed in as %s.", visitorName);
+        }
+        throw new Exception("Exception: <yourname>");
+    }
+
+    public String joinGame(String... params) throws Exception {
+        if (params.length >= 1) {
+            ChessGame.TeamColor teamColor = null;
+            
+            int gameId = Integer.parseInt(params[0]);
+            if (Objects.equals(params[1], "white")) {
+                teamColor = ChessGame.TeamColor.WHITE;
+            } else if (Objects.equals(params[1], "black")) {
+                teamColor = ChessGame.TeamColor.BLACK;
+            }
+            server.joinGame(new JoinGameRequest(teamColor, gameId, visitorName));
+            return String.format("You signed in as %s.", visitorName);
+        }
+        throw new Exception("Exception: <yourname>");
+    }
+
+    public String logout(String... params) throws Exception {
+        if (params.length >= 1) {
+            state = State.SIGNEDOUT;
+            server.logout();
             return String.format("You signed in as %s.", visitorName);
         }
         throw new Exception("Exception: <yourname>");
