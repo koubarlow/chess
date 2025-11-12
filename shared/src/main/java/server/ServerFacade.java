@@ -43,8 +43,8 @@ public class ServerFacade {
         handleResponse(response, null);
     }
 
-    public GameList listGames(String authToken) throws Exception {
-        var request = buildRequest("GET", "/game", authToken);
+    public GameList listGames() throws Exception {
+        var request = buildRequest("GET", "/game", null);
         var response = sendRequest(request);
         return handleResponse(response, GameList.class);
     }
@@ -56,7 +56,7 @@ public class ServerFacade {
     }
 
     public void clearApplication(String authToken) throws Exception {
-        var request = buildRequest("DELETE", "/db", authToken);
+        var request = buildRequest("DELETE", "/db", null);
         var response = sendRequest(request);
         handleResponse(response, null);
     }
