@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import com.google.gson.Gson;
 import model.*;
 import server.ServerFacade;
 
@@ -13,7 +14,7 @@ import static client.EscapeSequences.GREEN;
 
 public class ChessClient {
 
-    private String visitorName = null;
+    private String username = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
 
@@ -57,7 +58,7 @@ public class ChessClient {
                 case "register" -> register(params);
                 case "login" -> login(params);
                 case "create" -> createGame(params);
-                case "list" -> listGames(params);
+                case "list" -> listGames();
                 case "join" -> joinGame(params);
                 case "logout" -> logout(params);
                 case "quit" -> "quit";
@@ -71,35 +72,44 @@ public class ChessClient {
     public String register(String... params) throws Exception {
         if (params.length >= 1) {
             state = State.SIGNEDIN;
-            visitorName = String.join("-", params);
-            server.register(new RegisterRequest(params[0], params[1], params[2]));
-            return String.format("You registered and signed in as %s.", visitorName);
+            this.username = params[0];
+            String password = params[1];
+            String email = params[2];
+            server.register(new RegisterRequest(username, password, email));
+            return String.format("You registered and signed in as %s.", username);
         }
-        throw new Exception("Exception: <yourname>");
+        throw new Exception("Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
 
     public String login(String... params) throws Exception {
         if (params.length >= 1) {
-            server.login(new LoginRequest(params[0], params[1]));
-            return String.format("You signed in as %s.", visitorName);
+            this.username = params[0];
+            String password = params[1];
+            server.login(new LoginRequest(username, password));
+            return String.format("You signed in as %s.", username);
         }
-        throw new Exception("Exception: <yourname>");
+        throw new Exception("Expected: <USERNAME> <PASSWORD>");
     }
 
     public String createGame(String... params) throws Exception {
+        assertSignedIn();
         if (params.length >= 1) {
-            server.createGame(new CreateGameRequest(params[0]));
-            return String.format("You signed in as %s.", visitorName);
+            String gameName = params[0];
+            server.createGame(new CreateGameRequest(gameName));
+            return String.format("You created a game named: %s.", gameName);
         }
-        throw new Exception("Exception: <yourname>");
+        throw new Exception("Expected: <NAME>");
     }
 
-    public String listGames(String... params) throws Exception {
-        if (params.length >= 1) {
-            server.listGames();
-            return String.format("You signed in as %s.", visitorName);
+    public String listGames() throws Exception {
+        assertSignedIn();
+        GameList gameList = server.listGames();
+        var result = new StringBuilder();
+        var gson = new Gson();
+        for (GameData game : gameList) {
+            result.append(gson.toJson(game)).append('\n');
         }
-        throw new Exception("Exception: <yourname>");
+        return result.toString();
     }
 
     public String joinGame(String... params) throws Exception {
@@ -112,19 +122,19 @@ public class ChessClient {
             } else if (Objects.equals(params[1], "black")) {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-            server.joinGame(new JoinGameRequest(teamColor, gameId, visitorName));
-            return String.format("You signed in as %s.", visitorName);
+            server.joinGame(new JoinGameRequest(teamColor, gameId, username));
+            return String.format("You joined game %s as %s.", gameId, teamColor);
         }
-        throw new Exception("Exception: <yourname>");
+        throw new Exception("Exception: <ID> <WHITE|BLACK>");
     }
 
     public String logout(String... params) throws Exception {
         if (params.length >= 1) {
             state = State.SIGNEDOUT;
             server.logout();
-            return String.format("You signed in as %s.", visitorName);
+            return String.format("You signed out. Thank you for playing, %s.", username);
+            this.username = null;
         }
-        throw new Exception("Exception: <yourname>");
     }
 
     public String help() {
@@ -144,5 +154,11 @@ public class ChessClient {
                 quit - playing chess
                 help - with possible commands
                 """;
+    }
+
+    private void assertSignedIn() throws Exception {
+        if (state == State.SIGNEDOUT) {
+            throw new Exception("You must sign in");
+        }
     }
 }
