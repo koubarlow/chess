@@ -2,7 +2,11 @@ package client;
 
 import server.ServerFacade;
 
-import static client.EscapeSequences.LOGO;
+import java.util.Arrays;
+import java.util.Scanner;
+
+import static client.EscapeSequences.*;
+import static client.EscapeSequences.GREEN;
 
 public class ChessClient {
 
@@ -18,7 +22,41 @@ public class ChessClient {
         System.out.println(LOGO + "Welcome to chess. Sign in to start.");
         System.out.println(help());
 
+        Scanner scanner = new Scanner(System.in);
+        var result = "";
+        while (!result.equals("quit")) {
+            printPrompt();
+            String line = scanner.nextLine();
 
+            try {
+                result = eval(line);
+                System.out.println(BLUE + result);
+            } catch (Throwable e) {
+                var msg = e.toString();
+                System.out.println(msg);
+            }
+        }
+
+        System.out.println();
+    }
+
+    private void printPrompt() {
+        System.out.print("\n" + RESET + ">>> " + GREEN);
+    }
+
+    public String eval(String input) {
+        try {
+            String[] tokens = input.toLowerCase().split(" ");
+            String cmd = (tokens.length > 0) ? tokens[0] : "help";
+            String[] params = Arrays.copyOfRange(tokens, 1, tokens.length);
+
+            return switch (cmd) {
+                case "quit" -> "quit";
+                default -> help();
+            };
+        } catch (Exception ex) {
+            return ex.getMessage();
+        }
     }
 
     public String help() {
