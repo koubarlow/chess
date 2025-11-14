@@ -2,6 +2,7 @@ package client;
 
 import chess.ChessGame;
 import com.google.gson.Gson;
+import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
 
@@ -61,6 +62,7 @@ public class ChessClient {
                 case "create" -> createGame(params);
                 case "list" -> listGames();
                 case "join" -> joinGame(params);
+                case "observe" -> observeGame(params);
                 case "logout" -> logout();
                 case "quit" -> "quit";
                 default -> help();
@@ -131,6 +133,16 @@ public class ChessClient {
         throw new Exception("Exception: <ID> <WHITE|BLACK>");
     }
 
+    public String observeGame(String... params) throws ResponseException {
+        assertSignedIn();
+        if (params.length >= 1) {
+            int gameId = Integer.parseInt(params[0]);
+            // Observe game
+            return String.format("You're observing game %s as %s.", gameId, ChessGame.TeamColor.WHITE);
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
+    }
+
     public String logout() throws Exception {
         assertSignedIn();
         state = State.SIGNEDOUT;
@@ -153,15 +165,16 @@ public class ChessClient {
                 create <NAME> - a game
                 list - games
                 join <ID> [WHITE|BLACK] - game
+                observe <ID> - a game
                 logout - when you are done
                 quit - playing chess
                 help - with possible commands
                 """;
     }
 
-    private void assertSignedIn() throws Exception {
+    private void assertSignedIn() throws ResponseException {
         if (state == State.SIGNEDOUT) {
-            throw new Exception("You must sign in");
+            throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
         }
     }
 }
