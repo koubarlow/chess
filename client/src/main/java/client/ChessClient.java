@@ -1,17 +1,21 @@
 package client;
 
+import chess.ChessBoard;
 import chess.ChessGame;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
-
 import java.util.Arrays;
 import java.util.Objects;
 import java.util.Scanner;
 
-import static client.EscapeSequences.*;
-import static client.EscapeSequences.GREEN;
+import java.io.PrintStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Random;
+
+import static ui.EscapeSequences.*;
+import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
 public class ChessClient {
 
@@ -25,7 +29,7 @@ public class ChessClient {
     }
 
     public void run() {
-        System.out.println(LOGO + " ♕ Welcome to chess. Sign in to start.");
+        System.out.println(" ♕ Welcome to chess. Sign in to start. ♕");
         System.out.println(help());
 
         Scanner scanner = new Scanner(System.in);
@@ -36,7 +40,7 @@ public class ChessClient {
 
             try {
                 result = eval(line);
-                System.out.println(BLUE + result);
+                System.out.println(SET_TEXT_COLOR_BLUE + result);
             } catch (Throwable e) {
                 var msg = e.toString();
                 System.out.println(msg);
@@ -47,7 +51,7 @@ public class ChessClient {
     }
 
     private void printPrompt() {
-        System.out.print("\n" + RESET + ">>> " + GREEN);
+        System.out.print("\n" + RESET_TEXT_COLOR + ">>> " + SET_TEXT_COLOR_GREEN);
     }
 
     public String eval(String input) {
@@ -128,6 +132,7 @@ public class ChessClient {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
             server.joinGame(new JoinGameRequest(teamColor, gameId, username), this.authData.authToken());
+            drawBoard(new ChessGame(), teamColor);
             return String.format("You joined game %s as %s.", gameId, teamColor);
         }
         throw new Exception("Exception: <ID> <WHITE|BLACK>");
@@ -176,5 +181,62 @@ public class ChessClient {
         if (state == State.SIGNEDOUT) {
             throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
         }
+    }
+
+    private static final int BOARD_SIZE_IN_SQUARES = 10;
+    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
+    private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
+    private static Random rand = new Random();
+
+    private void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor) {
+        ChessBoard board = chessGame.getBoard();
+        var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
+        out.print(ERASE_SCREEN);
+        drawHeaders(out, teamColor);
+//        drawChessBoard(out, teamColor);
+//        drawFooters(out, teamColor);
+        out.print(RESET_BG_COLOR);
+        out.print(RESET_TEXT_COLOR);
+    }
+
+    private static void drawHeaders(PrintStream out, ChessGame.TeamColor color) {
+        setBlue(out);
+        String[] headers = {" ", "a", "b", "c", "d", "e", "f", "g", "h", " "};
+
+        if (color == ChessGame.TeamColor.BLACK) {
+            headers = new String[]{" ", "h", "g", "f", "e", "d", "c", "b", "a", " "};
+        }
+        for  (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
+            drawHeader(out, headers[boardCol]);
+
+            if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
+                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            }
+        }
+        out.println();
+
+    }
+
+    private static void drawHeader(PrintStream out, String headerText) {
+        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
+        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
+
+        out.print(EMPTY.repeat(prefixLength));
+        printHeaderText(out, headerText);
+        out.print(EMPTY.repeat(suffixLength));
+    }
+
+    private static void printHeaderText(PrintStream out, String player) {
+        out.print(SET_BG_COLOR_BLUE);
+        out.print(SET_TEXT_COLOR_WHITE);
+
+        out.print(player);
+
+        setBlue(out);
+    }
+
+    private static void setBlue(PrintStream out) {
+        out.print(SET_BG_COLOR_BLUE);
+        out.print(SET_TEXT_COLOR_BLUE);
     }
 }
