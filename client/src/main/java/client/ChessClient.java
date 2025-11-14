@@ -15,6 +15,7 @@ import static client.EscapeSequences.GREEN;
 public class ChessClient {
 
     private String username = null;
+    private AuthData authData = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
 
@@ -75,7 +76,7 @@ public class ChessClient {
             this.username = params[0];
             String password = params[1];
             String email = params[2];
-            server.register(new RegisterRequest(username, password, email));
+            this.authData = server.register(new RegisterRequest(username, password, email));
             return String.format("You registered and signed in as %s.", username);
         }
         throw new Exception("Expected: <USERNAME> <PASSWORD> <EMAIL>");
@@ -86,7 +87,7 @@ public class ChessClient {
             state = State.SIGNEDIN;
             this.username = params[0];
             String password = params[1];
-            server.login(new LoginRequest(username, password));
+            this.authData = server.login(new LoginRequest(username, password));
             return String.format("You signed in as %s.", username);
         }
         throw new Exception("Expected: <USERNAME> <PASSWORD>");
@@ -96,7 +97,7 @@ public class ChessClient {
         assertSignedIn();
         if (params.length >= 1) {
             String gameName = params[0];
-            server.createGame(new CreateGameRequest(gameName));
+            server.createGame(new CreateGameRequest(gameName), this.authData.authToken());
             return String.format("You created a game named: %s.", gameName);
         }
         throw new Exception("Expected: <NAME>");
@@ -104,10 +105,10 @@ public class ChessClient {
 
     public String listGames() throws Exception {
         assertSignedIn();
-        GameList gameList = server.listGames();
+        GamesWrapper gameList = server.listGames(this.authData.authToken());
         var result = new StringBuilder();
         var gson = new Gson();
-        for (GameData game : gameList) {
+        for (GameData game : gameList.games()) {
             result.append(gson.toJson(game)).append('\n');
         }
         return result.toString();
@@ -124,7 +125,7 @@ public class ChessClient {
             } else if (Objects.equals(params[1], "black")) {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
-            server.joinGame(new JoinGameRequest(teamColor, gameId, username));
+            server.joinGame(new JoinGameRequest(teamColor, gameId, username), this.authData.authToken());
             return String.format("You joined game %s as %s.", gameId, teamColor);
         }
         throw new Exception("Exception: <ID> <WHITE|BLACK>");
@@ -133,7 +134,7 @@ public class ChessClient {
     public String logout() throws Exception {
         assertSignedIn();
         state = State.SIGNEDOUT;
-        server.logout();
+        server.logout(this.authData.authToken());
         String usernameToSayGoodbyeTo = this.username;
         this.username = null;
         return String.format("You signed out. Thank you for playing, %s.", usernameToSayGoodbyeTo);

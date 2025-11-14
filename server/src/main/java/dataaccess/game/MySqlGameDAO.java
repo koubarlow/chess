@@ -63,7 +63,7 @@ public class MySqlGameDAO implements GameDAO {
     }
 
     public GameList listGames() throws Exception {
-        Collection<GameData> result = new ArrayList<>();
+        var result = new GameList();
         try (Connection conn = DatabaseManager.getConnection()) {
             var statement = "SELECT id, whiteUsername, blackUsername, gameName, json FROM game";
             try (PreparedStatement ps = conn.prepareStatement(statement)) {
@@ -76,7 +76,7 @@ public class MySqlGameDAO implements GameDAO {
         } catch (Exception e) {
             throw new DataAccessException(String.format("Error: unable to read data: %s", e.getMessage()));
         }
-        return new GameList(result);
+        return result;
     }
 
     public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
