@@ -190,8 +190,9 @@ public class ChessClient {
     }
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 3;
+    private static final int SQUARE_SIZE_IN_PADDED_CHARS = 1;
     private static final int LINE_WIDTH_IN_PADDED_CHARS = 1;
+    private static final String[] boardRows = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
 
     private void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor) {
         ChessBoard board = chessGame.getBoard();
@@ -211,14 +212,15 @@ public class ChessClient {
         if (color == ChessGame.TeamColor.BLACK) {
             headers = new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
         }
+        out.print("   ");
         for  (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             drawHeader(out, headers[boardCol]);
-
             // add spacing between header text
-            if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-                out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-            }
+            // if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
+            // out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
+            // }
         }
+        out.print("   ");
         resetColor(out);
         out.println();
     }
@@ -228,13 +230,12 @@ public class ChessClient {
         int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
 
         // print out spacing before letter
-        out.print(EMPTY.repeat(prefixLength));
 
         // print out the header letter
+        out.print(" ");
         printHeaderText(out, headerText);
-
+        out.print(" ");
         // print out spacing after the letter
-        out.print(EMPTY.repeat(suffixLength));
     }
 
     private static void printHeaderText(PrintStream out, String player) {
@@ -246,32 +247,50 @@ public class ChessClient {
         setBlue(out);
     }
 
+    private static void printRow(PrintStream out, String row) {
+        out.print(SET_BG_COLOR_BLUE);
+        out.print(SET_TEXT_COLOR_WHITE);
+
+        out.print(row);
+    }
+
     private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color) {
+
 
         for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
 
             drawRowOfSquares(out, board, boardRow);
 
             if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
-                drawHorizontalLine(out);
-                setBlack(out);
+                resetColor(out);
             }
         }
     }
 
     private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow) {
        //for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
+        printRow(out, boardRows[boardRow]);
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-                setWhite(out);
 
                 //if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
                     int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
                     int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
 
-                    out.print(EMPTY.repeat(prefixLength));
+                if (boardCol % 2 == 0) {
+                    if (boardRow % 2 == 0) {
+                        out.print(SET_BG_COLOR_LIGHT_GREY);
+                    } else {
+                        out.print(SET_BG_COLOR_DARK_GREY);
+                    }
+                } else {
+                    if (boardRow % 2 == 0) {
+                        out.print(SET_BG_COLOR_DARK_GREY);
+                    } else {
+                        out.print(SET_BG_COLOR_LIGHT_GREY);
+                    }
+                }
                     ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
                     printPiece(out, board.getPiece(posOfPiece));
-                    out.print(EMPTY.repeat(suffixLength));
 //                }
 //                else {
 //                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
@@ -283,7 +302,8 @@ public class ChessClient {
 //                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
 //                }
             }
-
+            printRow(out, boardRows[boardRow]);
+            resetColor(out);
             out.println();
         //}
     }
@@ -295,14 +315,13 @@ public class ChessClient {
             setRed(out);
             out.print(EMPTY.repeat(boardSizeInSpaces));
 
-            setBlack(out);
+            resetColor(out);
             out.println();
         }
     }
 
     private static void printPiece(PrintStream out, ChessPiece piece) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_BLACK);
+        out.print(SET_TEXT_COLOR_WHITE);
 
         if (piece == null) {
             out.print(EMPTY);
