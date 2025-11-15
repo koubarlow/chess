@@ -135,17 +135,20 @@ public class ChessClient {
             }
 
             server.joinGame(new JoinGameRequest(teamColor, gameId, username), this.authData.authToken());
-            drawBoard(new ChessGame(), teamColor);
+            GameData game = server.getGameById(this.authData.authToken(), gameId);
+            drawBoard(game.game(), teamColor);
             return String.format("You joined game %s as %s.", gameId, teamColor);
         }
         throw new Exception("Exception: <ID> <WHITE|BLACK>");
     }
 
+
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 1) {
             int gameId = Integer.parseInt(params[0]);
-            // Observe game
+            GameData game = server.getGameById(this.authData.authToken(), gameId);
+            drawBoard(game.game(), ChessGame.TeamColor.WHITE);
             return String.format("You're observing game %s as %s.", gameId, ChessGame.TeamColor.WHITE);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");

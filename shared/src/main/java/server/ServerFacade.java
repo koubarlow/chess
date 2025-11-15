@@ -49,16 +49,26 @@ public class ServerFacade {
         handleResponse(response, null);
     }
 
+    public GameData getGameById(String authToken, int gameId) throws ResponseException {
+        GamesWrapper gameList = listGames(authToken);
+        for (GameData game: gameList.games()) {
+            if (game.gameID() == gameId) {
+                return game;
+            }
+        }
+        return null;
+    }
+
     public GamesWrapper listGames(String authToken) throws ResponseException {
         var request = buildRequest("GET", "/game", null, authToken);
         var response = sendRequest(request);
         return handleResponse(response, GamesWrapper.class);
     }
 
-    public GameData joinGame(JoinGameRequest joinGameRequest, String authToken) throws ResponseException {
+    public void joinGame(JoinGameRequest joinGameRequest, String authToken) throws ResponseException {
         var request = buildRequest("PUT", "/game", joinGameRequest, authToken);
         var response = sendRequest(request);
-        return handleResponse(response, GameData.class);
+        handleResponse(response, null);
     }
 
     public void clearApplication(String authToken) throws ResponseException {
