@@ -55,10 +55,10 @@ public class ServerFacade {
         return handleResponse(response, GamesWrapper.class);
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, String authToken) throws ResponseException {
+    public GameData joinGame(JoinGameRequest joinGameRequest, String authToken) throws ResponseException {
         var request = buildRequest("PUT", "/game", joinGameRequest, authToken);
         var response = sendRequest(request);
-        handleResponse(response, null);
+        return handleResponse(response, GameData.class);
     }
 
     public void clearApplication(String authToken) throws ResponseException {
