@@ -1,12 +1,13 @@
 package client;
 
-import model.CreateGameRequest;
-import model.GamesWrapper;
-import model.LoginRequest;
-import model.RegisterRequest;
+import chess.ChessGame;
+import exception.ResponseException;
+import model.*;
 import org.junit.jupiter.api.*;
 import server.Server;
 import server.ServerFacade;
+
+import java.rmi.UnexpectedException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -29,7 +30,6 @@ public class ServerFacadeTests {
         server.stop();
     }
 
-
     @Test
     public void sampleTest() {
         Assertions.assertTrue(true);
@@ -42,6 +42,12 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void registerFailure() throws Exception {
+        facade.register(new RegisterRequest("player1", "password", "email@player.com"));
+        assertThrows(Exception.class, () -> facade.register(new RegisterRequest("player1", "password", "email@player.com")));
+    }
+
+    @Test
     void loginSuccess() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("a", "a", "a"));
         facade.logout(authTokenRegister.authToken());
@@ -50,9 +56,21 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void loginFailure() throws Exception {
+        var authTokenRegister = facade.register(new RegisterRequest("a", "a", "a"));
+        facade.logout(authTokenRegister.authToken());
+        assertThrows(ResponseException.class, () -> facade.login(new LoginRequest("a", "b")));
+    }
+
+    @Test
     void logoutSuccess() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("b", "b", "b"));
         assertDoesNotThrow(() -> facade.logout(authTokenRegister.authToken()));
+    }
+
+    @Test
+    void logoutFailure() throws Exception {
+        assertThrows(ResponseException.class, () -> facade.logout(""));
     }
 
     @Test
@@ -63,11 +81,25 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void createGameFailure() throws Exception {
+        var createGameRequest = new CreateGameRequest("game1a");
+        assertThrows(ResponseException.class, () -> facade.createGame(createGameRequest, ""));
+    }
+
+    @Test
     void getGameByIdSuccess() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("d", "d", "d"));
         var createGameRequest = new CreateGameRequest("game1a");
         facade.createGame(createGameRequest, authTokenRegister.authToken());
         assertEquals(1, facade.getGameById(authTokenRegister.authToken(), 1).gameID());
+    }
+
+    @Test
+    void getGameByIdFailure() throws Exception {
+        var authTokenRegister = facade.register(new RegisterRequest("d", "d", "d"));
+        var createGameRequest = new CreateGameRequest("game1a");
+        facade.createGame(createGameRequest, authTokenRegister.authToken());
+        assertThrows(ResponseException.class, () -> facade.getGameById("", 2));
     }
 
     @Test
@@ -82,8 +114,35 @@ public class ServerFacadeTests {
     }
 
     @Test
+    void listGamesFailure() throws Exception {
+        var authTokenRegister = facade.register(new RegisterRequest("e", "e", "e"));
+        facade.createGame(new CreateGameRequest("game1b"), authTokenRegister.authToken());
+        facade.createGame(new CreateGameRequest("game2c"), authTokenRegister.authToken());
+        facade.createGame(new CreateGameRequest("game3d"), authTokenRegister.authToken());
+        facade.createGame(new CreateGameRequest("game4e"), authTokenRegister.authToken());
+        assertThrows(ResponseException.class, () -> facade.listGames(""));
+    }
+
+    @Test
     void joinGameSuccess() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("f", "f", "f"));
+        facade.createGame(new CreateGameRequest("game5f"), authTokenRegister.authToken());
+        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, "f"), authTokenRegister.authToken());
+        GameData game = facade.getGameById(authTokenRegister.authToken(), 1);
+        assertEquals("f", game.whiteUsername());
+    }
+
+    @Test
+    void joinGameFailure() throws Exception {
+        var authTokenRegister = facade.register(new RegisterRequest("f", "f", "f"));
+        facade.createGame(new CreateGameRequest("game5f"), authTokenRegister.authToken());
+        assertThrows(ResponseException.class, () -> facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "f"), authTokenRegister.authToken()));
+    }
+
+    @Test
+    void clearApplicationSuccess() throws Exception {
+        var authData = facade.register(new RegisterRequest("h", "h", "h"));
+        assertDoesNotThrow(() -> facade.clearApplication(authData.authToken()));
     }
 
     @BeforeEach
