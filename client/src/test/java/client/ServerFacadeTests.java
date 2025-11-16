@@ -136,7 +136,7 @@ public class ServerFacadeTests {
     void joinGameFailure() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("f", "f", "f"));
         facade.createGame(new CreateGameRequest("game5f"), authTokenRegister.authToken());
-        JoinGameRequest request = new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "f")
+        JoinGameRequest request = new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "f");
         assertThrows(ResponseException.class, () -> facade.joinGame(request, authTokenRegister.authToken()));
     }
 
