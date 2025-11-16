@@ -40,7 +40,7 @@ import static ui.EscapeSequences.WHITE_ROOK;
 public class BoardDrawer {
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final String[] boardRows = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
+    private static final String[] BOARD_ROWS = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
 
     public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor) {
         ChessBoard board = chessGame.getBoard();
@@ -113,7 +113,7 @@ public class BoardDrawer {
     }
 
     private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color) {
-        printRow(out, boardRows[boardRow]);
+        printRow(out, BOARD_ROWS[boardRow]);
 
         if (color == ChessGame.TeamColor.WHITE) {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
@@ -130,7 +130,7 @@ public class BoardDrawer {
             }
         }
 
-        printRow(out, boardRows[boardRow]);
+        printRow(out, BOARD_ROWS[boardRow]);
         resetColor(out);
         out.println();
     }
@@ -207,18 +207,6 @@ public class BoardDrawer {
         resetColor(out);
     }
 
-    private static void setWhite(PrintStream out) {
-        out.print(SET_BG_COLOR_WHITE);
-        out.print(SET_TEXT_COLOR_WHITE);
-    }
-    private static void setRed(PrintStream out) {
-        out.print(SET_BG_COLOR_RED);
-        out.print(SET_TEXT_COLOR_RED);
-    }
-    private static void setBlack(PrintStream out) {
-        out.print(SET_BG_COLOR_BLACK);
-        out.print(SET_TEXT_COLOR_BLACK);
-    }
     private static void setBlue(PrintStream out) {
         out.print(SET_BG_COLOR_BLUE);
         out.print(SET_TEXT_COLOR_BLUE);
