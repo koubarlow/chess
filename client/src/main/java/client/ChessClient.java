@@ -7,9 +7,7 @@ import model.*;
 import server.ServerFacade;
 import ui.BoardDrawer;
 
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Scanner;
+import java.util.*;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
@@ -20,9 +18,11 @@ public class ChessClient {
     private AuthData authData = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
+    private HashMap<Integer, GameData> games;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        games = new HashMap<>();
     }
 
     public void run() {
@@ -112,11 +112,34 @@ public class ChessClient {
         assertSignedIn();
         GamesWrapper gameList = server.listGames(this.authData.authToken());
         var result = new StringBuilder();
-        var gson = new Gson();
+        int gameNumber = 1;
         for (GameData game : gameList.games()) {
-            result.append(gson.toJson(game)).append('\n');
+            this.games.put(gameNumber, game);
+            gameNumber++;
         }
+
+        for (Map.Entry<Integer, GameData> entry : this.games.entrySet()) {
+            String gameString = getGameAsString(entry);
+            result.append(gameString);
+        }
+
         return result.toString();
+    }
+
+    private static String getGameAsString(Map.Entry<Integer, GameData> entry) {
+        String whiteName = "[join as WHITE]";
+        if (entry.getValue().whiteUsername() != null) {
+            whiteName = entry.getValue().whiteUsername();
+        }
+
+        String blackName = "[join as BLACK]";
+        if (entry.getValue().blackUsername() != null) {
+            blackName = entry.getValue().blackUsername();
+        }
+
+        String gameName = entry.getValue().gameName();
+
+        return "[" + entry.getKey().toString() + "] " + gameName + " | " + whiteName + " VS " + blackName + "\n";
     }
 
     public String joinGame(String... params) throws ResponseException {
@@ -131,7 +154,11 @@ public class ChessClient {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
 
-            server.joinGame(new JoinGameRequest(teamColor, gameId, username), this.authData.authToken());
+            if (this.games.get(gameId) == null) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: game not found");
+            }
+
+            server.joinGame(new JoinGameRequest(teamColor, this.games.get(gameId).gameID(), username), this.authData.authToken());
             GameData game = server.getGameById(this.authData.authToken(), gameId);
             BoardDrawer.drawBoard(game.game(), teamColor);
             return String.format("You joined game %s as %s.", gameId, teamColor);
@@ -150,7 +177,11 @@ public class ChessClient {
                 teamColor = ChessGame.TeamColor.BLACK;
             }
 
-            GameData game = server.getGameById(this.authData.authToken(), gameId);
+            if (this.games.get(gameId) == null) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: game not found");
+            }
+
+            GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
             BoardDrawer.drawBoard(game.game(), teamColor);
             return String.format("You're observing game %s as %s.", gameId, teamColor);
         }
