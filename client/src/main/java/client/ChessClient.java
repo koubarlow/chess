@@ -1,7 +1,6 @@
 package client;
 
 import chess.ChessGame;
-import com.google.gson.Gson;
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
@@ -18,7 +17,7 @@ public class ChessClient {
     private AuthData authData = null;
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
-    private HashMap<Integer, GameData> games;
+    private final HashMap<Integer, GameData> games;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -146,8 +145,14 @@ public class ChessClient {
         assertSignedIn();
         if (params.length >= 2) {
             ChessGame.TeamColor teamColor = null;
-            
-            int gameId = Integer.parseInt(params[0]);
+
+            int gameId;
+            try {
+                gameId = Integer.parseInt(params[0]);
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid game number");
+            }
+
             if (Objects.equals(params[1], "white")) {
                 teamColor = ChessGame.TeamColor.WHITE;
             } else if (Objects.equals(params[1], "black")) {
@@ -170,7 +175,13 @@ public class ChessClient {
     public String observeGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 1) {
-            int gameId = Integer.parseInt(params[0]);
+
+            int gameId;
+            try {
+                gameId = Integer.parseInt(params[0]);
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid game number");
+            }
 
             ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
             if (params.length >= 2 && Objects.equals(params[1], "black")) {
