@@ -147,9 +147,15 @@ public class ChessClient {
         assertSignedIn();
         if (params.length >= 1) {
             int gameId = Integer.parseInt(params[0]);
+
+            ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
+            if (params.length >= 2 && Objects.equals(params[1], "black")) {
+                teamColor = ChessGame.TeamColor.BLACK;
+            }
+
             GameData game = server.getGameById(this.authData.authToken(), gameId);
-            drawBoard(game.game(), ChessGame.TeamColor.WHITE);
-            return String.format("You're observing game %s as %s.", gameId, ChessGame.TeamColor.WHITE);
+            drawBoard(game.game(), teamColor);
+            return String.format("You're observing game %s as %s.", gameId, teamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
     }
@@ -176,7 +182,7 @@ public class ChessClient {
                 create <NAME> - a game
                 list - games
                 join <ID> [WHITE|BLACK] - game
-                observe <ID> - a game
+                observe <ID> <WHITE|BLACK> - a game (default white)
                 logout - when you are done
                 quit - playing chess
                 help - with possible commands
@@ -212,30 +218,19 @@ public class ChessClient {
         if (color == ChessGame.TeamColor.BLACK) {
             headers = new String[]{"h", "g", "f", "e", "d", "c", "b", "a"};
         }
-        out.print("   ");
+        out.print(TAB);
         for  (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
             drawHeader(out, headers[boardCol]);
-            // add spacing between header text
-            // if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-            // out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-            // }
         }
-        out.print("   ");
+        out.print(TAB);
         resetColor(out);
         out.println();
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
-        int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-        int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
-        // print out spacing before letter
-
-        // print out the header letter
-        out.print(" ");
+        out.print(SPACE);
         printHeaderText(out, headerText);
-        out.print(" ");
-        // print out spacing after the letter
+        out.print(SPACE);
     }
 
     private static void printHeaderText(PrintStream out, String player) {
@@ -256,67 +251,61 @@ public class ChessClient {
 
     private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color) {
 
+        if (color == ChessGame.TeamColor.WHITE) {
+            for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
+                drawRowOfSquares(out, board, boardRow, color);
 
-        for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
+                if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
+                    resetColor(out);
+                }
+            }
+        } else {
+            for (int boardRow = BOARD_SIZE_IN_SQUARES - 1; boardRow >= 0; --boardRow) {
+                drawRowOfSquares(out, board, boardRow, color);
 
-            drawRowOfSquares(out, board, boardRow);
-
-            if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
-                resetColor(out);
+                if (boardRow > 1) {
+                    resetColor(out);
+                }
             }
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow) {
-       //for (int squareRow = 0; squareRow < SQUARE_SIZE_IN_PADDED_CHARS; ++squareRow) {
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color) {
         printRow(out, boardRows[boardRow]);
+
+        if (color == ChessGame.TeamColor.WHITE) {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
 
-                //if (squareRow == SQUARE_SIZE_IN_PADDED_CHARS / 2) {
-                    int prefixLength = SQUARE_SIZE_IN_PADDED_CHARS / 2;
-                    int suffixLength = SQUARE_SIZE_IN_PADDED_CHARS - prefixLength - 1;
-
-                if (boardCol % 2 == 0) {
-                    if (boardRow % 2 == 0) {
-                        out.print(SET_BG_COLOR_LIGHT_GREY);
-                    } else {
-                        out.print(SET_BG_COLOR_DARK_GREY);
-                    }
-                } else {
-                    if (boardRow % 2 == 0) {
-                        out.print(SET_BG_COLOR_DARK_GREY);
-                    } else {
-                        out.print(SET_BG_COLOR_LIGHT_GREY);
-                    }
-                }
-                    ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
-                    printPiece(out, board.getPiece(posOfPiece));
-//                }
-//                else {
-//                    out.print(EMPTY.repeat(SQUARE_SIZE_IN_PADDED_CHARS));
-//                }
-
-                // put red spacing after each padding
-//                if (boardCol < BOARD_SIZE_IN_SQUARES - 1) {
-//                    setRed(out);
-//                    out.print(EMPTY.repeat(LINE_WIDTH_IN_PADDED_CHARS));
-//                }
+                determineCheckerColor(boardRow, boardCol, out);
+                ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
+                printPiece(out, board.getPiece(posOfPiece));
             }
-            printRow(out, boardRows[boardRow]);
-            resetColor(out);
-            out.println();
-        //}
+        } else {
+            for (int boardCol = BOARD_SIZE_IN_SQUARES - 1; boardCol >= 0; --boardCol) {
+                determineCheckerColor(boardRow, boardCol, out);
+                ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
+                printPiece(out, board.getPiece(posOfPiece));
+            }
+        }
+
+        printRow(out, boardRows[boardRow]);
+        resetColor(out);
+        out.println();
     }
 
-    private static void drawHorizontalLine(PrintStream out) {
-        int boardSizeInSpaces = BOARD_SIZE_IN_SQUARES * SQUARE_SIZE_IN_PADDED_CHARS + (BOARD_SIZE_IN_SQUARES - 1) * LINE_WIDTH_IN_PADDED_CHARS;
-
-        for (int lineRow = 0; lineRow < LINE_WIDTH_IN_PADDED_CHARS; ++lineRow) {
-            setRed(out);
-            out.print(EMPTY.repeat(boardSizeInSpaces));
-
-            resetColor(out);
-            out.println();
+    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out) {
+        if (boardCol % 2 == 0) {
+            if (boardRow % 2 == 0) {
+                out.print(SET_BG_COLOR_LIGHT_GREY);
+            } else {
+                out.print(SET_BG_COLOR_DARK_GREY);
+            }
+        } else {
+            if (boardRow % 2 == 0) {
+                out.print(SET_BG_COLOR_DARK_GREY);
+            } else {
+                out.print(SET_BG_COLOR_LIGHT_GREY);
+            }
         }
     }
 
