@@ -1,9 +1,6 @@
 package server;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
 import exception.ResponseException;
 import model.*;
 
@@ -12,9 +9,6 @@ import java.net.http.*;
 import java.net.http.HttpRequest.BodyPublisher;
 import java.net.http.HttpRequest.BodyPublishers;
 import java.net.http.HttpResponse.BodyHandlers;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 
 public class ServerFacade {
 
