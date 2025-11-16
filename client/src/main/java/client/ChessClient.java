@@ -21,7 +21,7 @@ public class ChessClient {
     private final ServerFacade server;
     private State state = State.SIGNEDOUT;
 
-    public ChessClient(String serverUrl) throws Exception {
+    public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
     }
 
@@ -68,45 +68,47 @@ public class ChessClient {
                 case "quit" -> "quit";
                 default -> help();
             };
-        } catch (Exception ex) {
+        } catch (ResponseException ex) {
             return ex.getMessage();
         }
     }
 
-    public String register(String... params) throws Exception {
+    public String register(String... params) throws ResponseException {
         if (params.length >= 3) {
-            state = State.SIGNEDIN;
             this.username = params[0];
             String password = params[1];
             String email = params[2];
             this.authData = server.register(new RegisterRequest(username, password, email));
+            if (this.authData != null) {
+                state = State.SIGNEDIN;
+            }
             return String.format("You registered and signed in as %s.", username);
         }
-        throw new Exception("Expected: <USERNAME> <PASSWORD> <EMAIL>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <USERNAME> <PASSWORD> <EMAIL>");
     }
 
-    public String login(String... params) throws Exception {
+    public String login(String... params) throws ResponseException {
         if (params.length >= 2) {
-            state = State.SIGNEDIN;
             this.username = params[0];
             String password = params[1];
             this.authData = server.login(new LoginRequest(username, password));
+            if (authData != null) { state = State.SIGNEDIN; }
             return String.format("You signed in as %s.", username);
         }
-        throw new Exception("Expected: <USERNAME> <PASSWORD>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <USERNAME> <PASSWORD>");
     }
 
-    public String createGame(String... params) throws Exception {
+    public String createGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 1) {
             String gameName = params[0];
             server.createGame(new CreateGameRequest(gameName), this.authData.authToken());
             return String.format("You created a game named: %s.", gameName);
         }
-        throw new Exception("Expected: <NAME>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Expected: <NAME>");
     }
 
-    public String listGames() throws Exception {
+    public String listGames() throws ResponseException {
         assertSignedIn();
         GamesWrapper gameList = server.listGames(this.authData.authToken());
         var result = new StringBuilder();
@@ -117,7 +119,7 @@ public class ChessClient {
         return result.toString();
     }
 
-    public String joinGame(String... params) throws Exception {
+    public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 2) {
             ChessGame.TeamColor teamColor = null;
@@ -134,7 +136,7 @@ public class ChessClient {
             BoardDrawer.drawBoard(game.game(), teamColor);
             return String.format("You joined game %s as %s.", gameId, teamColor);
         }
-        throw new Exception("Exception: <ID> <WHITE|BLACK>");
+        throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
     }
 
 
@@ -155,10 +157,11 @@ public class ChessClient {
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
     }
 
-    public String logout() throws Exception {
+    public String logout() throws ResponseException {
         assertSignedIn();
         state = State.SIGNEDOUT;
         server.logout(this.authData.authToken());
+        this.authData = null;
         String usernameToSayGoodbyeTo = this.username;
         this.username = null;
         return String.format("You signed out. Thank you for playing, %s.", usernameToSayGoodbyeTo);

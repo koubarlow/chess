@@ -1,18 +1,16 @@
 package dataaccess.exceptions;
 
 import com.google.gson.Gson;
+import exception.ResponseException;
 
 import java.util.Map;
 
 /**
  * Indicates there was an error connecting to the database
  */
-public class DataAccessException extends Exception{
+public class DataAccessException extends ResponseException {
     public DataAccessException(String message) {
-        super(message);
-    }
-    public DataAccessException(String message, Throwable ex) {
-        super(message, ex);
+        super(Code.ServerError, message);
     }
 
     public String toJson() {
