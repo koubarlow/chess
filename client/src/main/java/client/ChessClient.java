@@ -128,19 +128,19 @@ public class ChessClient {
     }
 
     private static String getGameAsString(Map.Entry<Integer, GameData> entry) {
-        String whiteName = "[join as WHITE]";
+        String whiteName = "[join]";
         if (entry.getValue().whiteUsername() != null) {
             whiteName = entry.getValue().whiteUsername();
         }
 
-        String blackName = "[join as BLACK]";
+        String blackName = "[join]";
         if (entry.getValue().blackUsername() != null) {
             blackName = entry.getValue().blackUsername();
         }
 
         String gameName = entry.getValue().gameName();
 
-        return "[" + entry.getKey().toString() + "] " + gameName + " | " + whiteName + " VS " + blackName + "\n";
+        return "[" + entry.getKey().toString() + "] " + gameName + " - " + whiteName + "(white)" + " VS " + blackName + "(black)" + "\n";
     }
 
     public String joinGame(String... params) throws ResponseException {
