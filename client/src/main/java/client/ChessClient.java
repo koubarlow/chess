@@ -64,6 +64,11 @@ public class ChessClient {
                 case "join" -> joinGame(params);
                 case "observe" -> observeGame(params);
                 case "logout" -> logout();
+                case "redraw" -> redrawBoard();
+                case "leave" -> leaveGame();
+                case "move" -> makeMove(params);
+                case "resign" -> resign();
+                case "highlight" -> highlightLegalMoves();
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -211,6 +216,26 @@ public class ChessClient {
         return String.format("You signed out. Thank you for playing, %s.", usernameToSayGoodbyeTo);
     }
 
+    public String redrawBoard() throws ResponseException {
+        return "Redrawing board...";
+    }
+
+    public String leaveGame() throws ResponseException {
+        return "Leaving game...";
+    }
+
+    public String makeMove(String... params) throws ResponseException {
+        return "Making Move...";
+    }
+
+    public String resign() throws ResponseException {
+        return "Resigning...";
+    }
+
+    public String highlightLegalMoves() throws ResponseException {
+        return "Highlighting legal moves...";
+    }
+
     public String help() {
         if (state == State.SIGNEDOUT) {
             return """
@@ -220,10 +245,19 @@ public class ChessClient {
                     help - with possible commands
                     """;
         }
+        if (state == State.GAMEPLAY) {
+            return """
+                    redraw - chess board
+                    leave - game
+                    move <(X, Y) (X, Y)>
+                    resign
+                    highlight - legal moves
+                    """;
+        }
         return """
                 create <NAME> - a game
                 list - games
-                join <ID> [WHITE|BLACK] - game
+                join <ID> <WHITE|BLACK> - game
                 observe <ID> <WHITE|BLACK> - a game (default white)
                 logout - when you are done
                 quit - playing chess
