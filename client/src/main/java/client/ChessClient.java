@@ -1,6 +1,7 @@
 package client;
 
 import chess.ChessGame;
+import chess.ChessPosition;
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
@@ -19,9 +20,22 @@ public class ChessClient {
     private State state = State.SIGNEDOUT;
     private final HashMap<Integer, GameData> games;
 
+    private ChessGame.TeamColor currentTeamColor;
+    private int currentGameId;
+    private HashMap<Character, Integer> columnTable;
+
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
         games = new HashMap<>();
+        columnTable = new HashMap<>();
+        columnTable.put('a', 1);
+        columnTable.put('b', 2);
+        columnTable.put('c', 3);
+        columnTable.put('d', 4);
+        columnTable.put('e', 5);
+        columnTable.put('f', 6);
+        columnTable.put('g', 7);
+        columnTable.put('h', 8);
     }
 
     public void run() {
@@ -68,7 +82,7 @@ public class ChessClient {
                 case "leave" -> leaveGame();
                 case "move" -> makeMove(params);
                 case "resign" -> resign();
-                case "highlight" -> highlightLegalMoves();
+                case "highlight" -> highlightLegalMoves(params);
                 case "quit" -> "quit";
                 default -> help();
             };
@@ -151,7 +165,7 @@ public class ChessClient {
     public String joinGame(String... params) throws ResponseException {
         assertSignedIn();
         if (params.length >= 2) {
-            ChessGame.TeamColor teamColor = null;
+            this.currentTeamColor = null;
 
             int gameId;
             try {
@@ -161,19 +175,21 @@ public class ChessClient {
             }
 
             if (Objects.equals(params[1], "white")) {
-                teamColor = ChessGame.TeamColor.WHITE;
+                this.currentTeamColor = ChessGame.TeamColor.WHITE;
             } else if (Objects.equals(params[1], "black")) {
-                teamColor = ChessGame.TeamColor.BLACK;
+                this.currentTeamColor = ChessGame.TeamColor.BLACK;
             }
 
             if (this.games.get(gameId) == null) {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: game not found");
             }
 
-            server.joinGame(new JoinGameRequest(teamColor, this.games.get(gameId).gameID(), username), this.authData.authToken());
+            server.joinGame(new JoinGameRequest(this.currentTeamColor, this.games.get(gameId).gameID(), username), this.authData.authToken());
+            this.currentGameId = gameId;
+            this.state = State.GAMEPLAY;
             GameData game = server.getGameById(this.authData.authToken(), gameId);
-            BoardDrawer.drawBoard(game.game(), teamColor);
-            return String.format("You joined game %s as %s.", gameId, teamColor);
+            BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+            return String.format("You joined game %s as %s.", gameId, this.currentTeamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
     }
@@ -200,7 +216,7 @@ public class ChessClient {
             }
 
             GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
-            BoardDrawer.drawBoard(game.game(), teamColor);
+            BoardDrawer.drawBoard(game.game(), teamColor, false, null);
             return String.format("You're observing game %s as %s.", gameId, teamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
@@ -217,23 +233,54 @@ public class ChessClient {
     }
 
     public String redrawBoard() throws ResponseException {
-        return "Redrawing board...";
+        assertInGamePlay();
+        GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
+        BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+        return "Board redrawn.";
     }
 
     public String leaveGame() throws ResponseException {
+        assertInGamePlay();
+        this.state = State.SIGNEDIN;
+        this.currentGameId = 0;
+        this.currentTeamColor = null;
         return "Leaving game...";
     }
 
     public String makeMove(String... params) throws ResponseException {
+        assertInGamePlay();
         return "Making Move...";
     }
 
     public String resign() throws ResponseException {
+        assertInGamePlay();
+        this.state = State.SIGNEDIN;
         return "Resigning...";
     }
 
-    public String highlightLegalMoves() throws ResponseException {
-        return "Highlighting legal moves...";
+    public String highlightLegalMoves(String... params) throws ResponseException {
+        assertInGamePlay();
+        if (params.length == 1) {
+            try {
+                int row = 1;
+                int col = 1;
+
+                for (int i = 0; i < params[0].length(); i++) {
+                    if (i == 0) {
+                        col = this.columnTable.get(params[0].charAt(i));
+                    } else if (i == 1) {
+                        row = Integer.parseInt(String.valueOf(params[0].charAt(i)));
+                    }
+                }
+
+                GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
+                BoardDrawer.drawBoard(game.game(), this.currentTeamColor, true, new ChessPosition(row, col));
+                return "Highlighted legal moves.";
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column");
+            }
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Exception: <POSITION>");
     }
 
     public String help() {
@@ -249,9 +296,9 @@ public class ChessClient {
             return """
                     redraw - chess board
                     leave - game
-                    move <(X, Y) (X, Y)>
+                    move <POS₁ POS₂>
                     resign
-                    highlight - legal moves
+                    highlight <POSITION> - legal moves
                     """;
         }
         return """
@@ -266,6 +313,9 @@ public class ChessClient {
     }
 
     private void assertSignedIn() throws ResponseException {
+        if (state == State.GAMEPLAY) {
+            throw new ResponseException(ResponseException.Code.ClientError, "Currently in game");
+        }
         if (state == State.SIGNEDOUT) {
             throw new ResponseException(ResponseException.Code.ClientError, "You must sign in");
         }
@@ -274,6 +324,12 @@ public class ChessClient {
     private void assertSignedOut() throws ResponseException {
         if (state == State.SIGNEDIN) {
             throw new ResponseException(ResponseException.Code.ClientError, "Already logged in");
+        }
+    }
+
+    private void assertInGamePlay() throws ResponseException {
+        if (state == State.SIGNEDOUT || state == State.SIGNEDIN) {
+            throw new ResponseException(ResponseException.Code.ClientError, "Currently not in game");
         }
     }
 }

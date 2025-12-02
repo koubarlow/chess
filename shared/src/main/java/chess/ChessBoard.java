@@ -51,8 +51,6 @@ public class ChessBoard {
         ChessPiece pieceInCurPos = getPiece(curPos);
         ChessPiece ogPiece = getPiece(newPos);
 
-        System.out.println(pieceInCurPos.getPieceType() + ":" + curPos + " -> " + newPos);
-
         ChessBoard boardCopy = new ChessBoard(board);
         this.board[curPos.getRow() - 1][curPos.getColumn() - 1] = null;
         this.board[newPos.getRow() - 1][newPos.getColumn() - 1] = pieceInCurPos;

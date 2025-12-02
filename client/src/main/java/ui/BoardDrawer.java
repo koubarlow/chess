@@ -1,12 +1,13 @@
 package ui;
 
-import chess.ChessBoard;
-import chess.ChessGame;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.BLACK_BISHOP;
@@ -42,12 +43,17 @@ public class BoardDrawer {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final String[] BOARD_ROWS = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
 
-    public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor) {
+    public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) {
         ChessBoard board = chessGame.getBoard();
+        Set<ChessMove> positionsToHighlight = new HashSet<>();
+        if (highlightPossibleMoves) {
+            positionsToHighlight = collectValidMoves(chessGame, position);
+        }
+
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
         drawHeaders(out, teamColor);
-        drawChessBoard(out, board, teamColor);
+        drawChessBoard(out, board, teamColor, positionsToHighlight);
         drawHeaders(out, teamColor);
         out.print(RESET_BG_COLOR);
         out.print(RESET_TEXT_COLOR);
@@ -67,6 +73,10 @@ public class BoardDrawer {
         out.print(TAB);
         resetColor(out);
         out.println();
+    }
+
+    private static Set<ChessMove> collectValidMoves(ChessGame game, ChessPosition position) {
+        return new HashSet<>(game.validMoves(position));
     }
 
     private static void drawHeader(PrintStream out, String headerText) {
@@ -91,11 +101,11 @@ public class BoardDrawer {
         out.print(row);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color) {
+    private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
 
         if (color == ChessGame.TeamColor.WHITE) {
             for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
-                drawRowOfSquares(out, board, boardRow, color);
+                drawRowOfSquares(out, board, boardRow, color, movesToHighlight);
 
                 if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                     resetColor(out);
@@ -103,7 +113,7 @@ public class BoardDrawer {
             }
         } else {
             for (int boardRow = BOARD_SIZE_IN_SQUARES - 1; boardRow >= 0; --boardRow) {
-                drawRowOfSquares(out, board, boardRow, color);
+                drawRowOfSquares(out, board, boardRow, color, movesToHighlight);
 
                 if (boardRow > 1) {
                     resetColor(out);
@@ -112,19 +122,19 @@ public class BoardDrawer {
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color) {
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
         printRow(out, BOARD_ROWS[boardRow]);
 
         if (color == ChessGame.TeamColor.WHITE) {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
 
-                determineCheckerColor(boardRow, boardCol, out);
+                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight);
                 ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
                 printPiece(out, board.getPiece(posOfPiece));
             }
         } else {
             for (int boardCol = BOARD_SIZE_IN_SQUARES - 1; boardCol >= 0; --boardCol) {
-                determineCheckerColor(boardRow, boardCol, out);
+                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight);
                 ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
                 printPiece(out, board.getPiece(posOfPiece));
             }
@@ -135,18 +145,42 @@ public class BoardDrawer {
         out.println();
     }
 
-    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out) {
+    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
+        boolean needToHighlight = false;
+
+        for (ChessMove move: movesToHighlight) {
+            int columnToPossiblyHighlight = move.getEndPosition().getColumn() - 1;
+            int rowToPossiblyHighlight = move.getEndPosition().getRow() + 1;
+
+            if (color == ChessGame.TeamColor.BLACK) {
+                rowToPossiblyHighlight = 8 - move.getEndPosition().getRow();
+            }
+
+            if (columnToPossiblyHighlight == boardCol && rowToPossiblyHighlight == boardRow) {
+                needToHighlight = true;
+                break;
+            }
+        }
+
         if (boardCol % 2 == 0) {
-            if (boardRow % 2 == 0) {
-                out.print(SET_BG_COLOR_LIGHT_GREY);
+            setSquareColor(boardRow, out, needToHighlight, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY);
+        } else {
+            setSquareColor(boardRow, out, needToHighlight, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY);
+        }
+    }
+
+    private static void setSquareColor(int boardRow, PrintStream out, boolean needToHighlight, String setBgColorDarkGreen, String setBgColorDarkGrey, String setBgColorGreen, String setBgColorLightGrey) {
+        if (boardRow % 2 == 0) {
+            if (needToHighlight) {
+                out.print(setBgColorDarkGreen);
             } else {
-                out.print(SET_BG_COLOR_DARK_GREY);
+                out.print(setBgColorDarkGrey);
             }
         } else {
-            if (boardRow % 2 == 0) {
-                out.print(SET_BG_COLOR_DARK_GREY);
+            if (needToHighlight) {
+                out.print(setBgColorGreen);
             } else {
-                out.print(SET_BG_COLOR_LIGHT_GREY);
+                out.print(setBgColorLightGrey);
             }
         }
     }
