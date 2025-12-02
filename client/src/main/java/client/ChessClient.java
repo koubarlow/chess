@@ -1,7 +1,6 @@
 package client;
 
-import chess.ChessGame;
-import chess.ChessPosition;
+import chess.*;
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
@@ -22,7 +21,7 @@ public class ChessClient {
 
     private ChessGame.TeamColor currentTeamColor;
     private int currentGameId;
-    private HashMap<Character, Integer> columnTable;
+    private final HashMap<Character, Integer> columnTable;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -249,7 +248,27 @@ public class ChessClient {
 
     public String makeMove(String... params) throws ResponseException {
         assertInGamePlay();
-        return "Making Move...";
+        assertInGamePlay();
+        if (params.length > 1 && params[0].length() == 2 && params[1].length() == 2) {
+            try {
+                int initialCol = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
+                int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
+                int endCol = this.columnTable.get(params[1].charAt(0));
+                int endRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
+                GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
+                ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
+                ChessPosition endPos = new ChessPosition(endRow, endCol);
+                ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
+                game.game().makeMove(new ChessMove(beginningPos, endPos, null));
+                BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+                return "Moved " + pieceToMove + " to " + params[1];
+            } catch (NumberFormatException e) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column for piece");
+            } catch (InvalidMoveException e) {
+                throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
+            }
+        }
+        throw new ResponseException(ResponseException.Code.ClientError, "Exception: <POSITION>");
     }
 
     public String resign() throws ResponseException {
@@ -260,18 +279,10 @@ public class ChessClient {
 
     public String highlightLegalMoves(String... params) throws ResponseException {
         assertInGamePlay();
-        if (params.length == 1) {
+        if (params.length == 1 && params[0].length() == 2) {
             try {
-                int row = 1;
-                int col = 1;
-
-                for (int i = 0; i < params[0].length(); i++) {
-                    if (i == 0) {
-                        col = this.columnTable.get(params[0].charAt(i));
-                    } else if (i == 1) {
-                        row = Integer.parseInt(String.valueOf(params[0].charAt(i)));
-                    }
-                }
+                int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
+                int row = Integer.parseInt(String.valueOf(params[0].charAt(1)));
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, true, new ChessPosition(row, col));
