@@ -22,11 +22,13 @@ public class ChessClient {
     private ChessGame.TeamColor currentTeamColor;
     private int currentGameId;
     private final HashMap<Character, Integer> columnTable;
+    private final HashMap<Integer, Integer> rowMapper;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
         games = new HashMap<>();
         columnTable = new HashMap<>();
+        rowMapper = new HashMap<>();
         columnTable.put('a', 1);
         columnTable.put('b', 2);
         columnTable.put('c', 3);
@@ -35,6 +37,15 @@ public class ChessClient {
         columnTable.put('f', 6);
         columnTable.put('g', 7);
         columnTable.put('h', 8);
+
+        rowMapper.put(1, 8);
+        rowMapper.put(2, 7);
+        rowMapper.put(3, 6);
+        rowMapper.put(4, 5);
+        rowMapper.put(5, 4);
+        rowMapper.put(6, 3);
+        rowMapper.put(7, 2);
+        rowMapper.put(8, 1);
     }
 
     public void run() {
@@ -248,20 +259,22 @@ public class ChessClient {
 
     public String makeMove(String... params) throws ResponseException {
         assertInGamePlay();
-        assertInGamePlay();
         if (params.length > 1 && params[0].length() == 2 && params[1].length() == 2) {
             try {
                 int initialCol = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
                 int endCol = this.columnTable.get(params[1].charAt(0));
                 int endRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
+
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
+
                 game.game().makeMove(new ChessMove(beginningPos, endPos, null));
+
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
-                return "Moved " + pieceToMove + " to " + params[1];
+                return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column for piece");
             } catch (InvalidMoveException e) {
@@ -283,6 +296,7 @@ public class ChessClient {
             try {
                 int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int row = Integer.parseInt(String.valueOf(params[0].charAt(1)));
+                row = rowMapper.get(row);
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, true, new ChessPosition(row, col));

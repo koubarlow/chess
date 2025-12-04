@@ -53,7 +53,7 @@ public class BoardDrawer {
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
         drawHeaders(out, teamColor);
-        drawChessBoard(out, board, teamColor, positionsToHighlight);
+        drawChessBoard(out, board, teamColor, positionsToHighlight, position);
         drawHeaders(out, teamColor);
         out.print(RESET_BG_COLOR);
         out.print(RESET_TEXT_COLOR);
@@ -101,11 +101,11 @@ public class BoardDrawer {
         out.print(row);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
+    private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
 
         if (color == ChessGame.TeamColor.WHITE) {
             for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
-                drawRowOfSquares(out, board, boardRow, color, movesToHighlight);
+                drawRowOfSquares(out, board, boardRow, color, movesToHighlight, posToSpecialHighlight);
 
                 if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                     resetColor(out);
@@ -113,7 +113,7 @@ public class BoardDrawer {
             }
         } else {
             for (int boardRow = BOARD_SIZE_IN_SQUARES - 1; boardRow >= 0; --boardRow) {
-                drawRowOfSquares(out, board, boardRow, color, movesToHighlight);
+                drawRowOfSquares(out, board, boardRow, color, movesToHighlight, posToSpecialHighlight);
 
                 if (boardRow > 1) {
                     resetColor(out);
@@ -122,19 +122,19 @@ public class BoardDrawer {
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
+    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
         printRow(out, BOARD_ROWS[boardRow]);
 
         if (color == ChessGame.TeamColor.WHITE) {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
 
-                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight);
+                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight, posToSpecialHighlight);
                 ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
                 printPiece(out, board.getPiece(posOfPiece));
             }
         } else {
             for (int boardCol = BOARD_SIZE_IN_SQUARES - 1; boardCol >= 0; --boardCol) {
-                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight);
+                determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight, posToSpecialHighlight);
                 ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
                 printPiece(out, board.getPiece(posOfPiece));
             }
@@ -145,31 +145,37 @@ public class BoardDrawer {
         out.println();
     }
 
-    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight) {
+    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
         boolean needToHighlight = false;
+        boolean specialHighlight = false;
 
         for (ChessMove move: movesToHighlight) {
-            int columnToPossiblyHighlight = move.getEndPosition().getColumn() - 1;
-            int rowToPossiblyHighlight = move.getEndPosition().getRow() + 1;
+            int columnToPossiblyHighlight = move.getEndPosition().getColumn();
+            int rowToPossiblyHighlight = move.getEndPosition().getRow();
 
-            if (color == ChessGame.TeamColor.BLACK) {
-                rowToPossiblyHighlight = 8 - move.getEndPosition().getRow();
-            }
-
-            if (columnToPossiblyHighlight == boardCol && rowToPossiblyHighlight == boardRow) {
+            if (columnToPossiblyHighlight == boardCol + 1 && rowToPossiblyHighlight == boardRow + 1) {
                 needToHighlight = true;
                 break;
             }
         }
 
+        if (posToSpecialHighlight != null && boardCol + 1 == posToSpecialHighlight.getColumn() && boardRow + 1 == posToSpecialHighlight.getRow()) {
+            specialHighlight = true;
+        }
+
         if (boardCol % 2 == 0) {
-            setSquareColor(boardRow, out, needToHighlight, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY);
+            setSquareColor(boardRow, out, needToHighlight, specialHighlight, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY);
         } else {
-            setSquareColor(boardRow, out, needToHighlight, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY);
+            setSquareColor(boardRow, out, needToHighlight, specialHighlight, SET_BG_COLOR_DARK_GREEN, SET_BG_COLOR_DARK_GREY, SET_BG_COLOR_GREEN, SET_BG_COLOR_LIGHT_GREY);
         }
     }
 
-    private static void setSquareColor(int boardRow, PrintStream out, boolean needToHighlight, String setBgColorDarkGreen, String setBgColorDarkGrey, String setBgColorGreen, String setBgColorLightGrey) {
+    private static void setSquareColor(int boardRow, PrintStream out, boolean needToHighlight, boolean specialHighlight, String setBgColorDarkGreen, String setBgColorDarkGrey, String setBgColorGreen, String setBgColorLightGrey) {
+        if (specialHighlight) {
+            out.print(SET_BG_COLOR_MAGENTA);
+            return;
+        }
+
         if (boardRow % 2 == 0) {
             if (needToHighlight) {
                 out.print(setBgColorDarkGreen);
