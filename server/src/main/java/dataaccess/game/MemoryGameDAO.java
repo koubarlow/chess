@@ -5,7 +5,7 @@ import dataaccess.exceptions.BadRequestException;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
-import model.JoinGameRequest;
+import model.UpdateGameRequest;
 
 import java.util.HashMap;
 
@@ -30,15 +30,15 @@ public class MemoryGameDAO implements GameDAO {
         return new GameList(games.values());
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
+    public void updateGame(UpdateGameRequest updateGameRequest, String username) throws Exception {
 
-        if (joinGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
-        int gameId = joinGameRequest.gameID();
-        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
+        if (updateGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
+        int gameId = updateGameRequest.gameID();
+        ChessGame.TeamColor teamColor = updateGameRequest.playerColor();
         if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
         GameData game = games.get(gameId);
 
-        games.put(gameId, updateGame(game, gameId, teamColor, username));
+        games.put(gameId, updateGame(game, gameId, teamColor, username, false));
     }
 
     public void clearGames() {

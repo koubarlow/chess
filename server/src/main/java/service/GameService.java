@@ -7,7 +7,7 @@ import dataaccess.game.GameDAO;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
-import model.JoinGameRequest;
+import model.UpdateGameRequest;
 
 public class GameService {
 
@@ -35,10 +35,10 @@ public class GameService {
         throw new UnauthorizedException("Error: unauthorized");
     }
 
-    public void joinGame(String authToken, JoinGameRequest joinGameRequest) throws Exception {
+    public void updateGame(String authToken, UpdateGameRequest updateGameRequest) throws Exception {
         if (authDAO.sessionExistsForAuthToken(authToken)) {
             String username = this.authDAO.getUsername(authToken);
-            this.gameDAO.joinGame(joinGameRequest, username);
+            this.gameDAO.updateGame(updateGameRequest, username);
         } else {
             throw new UnauthorizedException("Error: unauthorized");
         }

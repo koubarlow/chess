@@ -194,7 +194,7 @@ public class ChessClient {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: game not found");
             }
 
-            server.joinGame(new JoinGameRequest(this.currentTeamColor, this.games.get(gameId).gameID(), username), this.authData.authToken());
+            server.updateGame(new UpdateGameRequest(this.currentTeamColor, this.games.get(gameId).gameID(), username, null), this.authData.authToken());
             this.currentGameId = gameId;
             this.state = State.GAMEPLAY;
             GameData game = server.getGameById(this.authData.authToken(), gameId);
@@ -272,8 +272,8 @@ public class ChessClient {
                 ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
-
                 game.game().makeMove(new ChessMove(beginningPos, endPos, null));
+                server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];

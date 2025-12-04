@@ -47,7 +47,7 @@ public class Server {
                 .delete("/session", sessionServerHelper::logout)
                 .post("/game", gameServerHelper::createGame)
                 .get("/game", gameServerHelper::listGames)
-                .put("/game", gameServerHelper::joinGame)
+                .put("/game", gameServerHelper::updateGame)
                 .delete("/db", clearServerHelper::clearApplication);
     }
 

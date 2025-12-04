@@ -127,7 +127,7 @@ public class ServerFacadeTests {
     void joinGameSuccess() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("f", "f", "f"));
         facade.createGame(new CreateGameRequest("game5f"), authTokenRegister.authToken());
-        facade.joinGame(new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, "f"), authTokenRegister.authToken());
+        facade.updateGame(new UpdateGameRequest(ChessGame.TeamColor.WHITE, 1, "f", null), authTokenRegister.authToken());
         GameData game = facade.getGameById(authTokenRegister.authToken(), 1);
         assertEquals("f", game.whiteUsername());
     }
@@ -136,8 +136,8 @@ public class ServerFacadeTests {
     void joinGameFailure() throws Exception {
         var authTokenRegister = facade.register(new RegisterRequest("f", "f", "f"));
         facade.createGame(new CreateGameRequest("game5f"), authTokenRegister.authToken());
-        JoinGameRequest request = new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "f");
-        assertThrows(ResponseException.class, () -> facade.joinGame(request, authTokenRegister.authToken()));
+        UpdateGameRequest request = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 2, "f", null);
+        assertThrows(ResponseException.class, () -> facade.updateGame(request, authTokenRegister.authToken()));
     }
 
     @Test

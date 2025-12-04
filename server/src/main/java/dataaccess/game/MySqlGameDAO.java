@@ -8,7 +8,7 @@ import dataaccess.exceptions.DataAccessException;
 import model.CreateGameRequest;
 import model.GameData;
 import model.GameList;
-import model.JoinGameRequest;
+import model.UpdateGameRequest;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -79,14 +79,24 @@ public class MySqlGameDAO implements GameDAO {
         return result;
     }
 
-    public void joinGame(JoinGameRequest joinGameRequest, String username) throws Exception {
-        if (joinGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
-        int gameId = joinGameRequest.gameID();
-        ChessGame.TeamColor teamColor = joinGameRequest.playerColor();
-        if (teamColor == null) { throw new BadRequestException("Error: bad request"); }
-        GameData game = getGame(gameId);
+    public void updateGame(UpdateGameRequest updateGameRequest, String username) throws Exception {
+        if (updateGameRequest.gameID() == null) { throw new BadRequestException("Error: bad request"); }
+        int gameId = updateGameRequest.gameID();
+        GameData gameData;
+        GameData updatedGame;
 
-        GameData updatedGame = updateGame(game, gameId, teamColor, username);
+        ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
+
+        if (updateGameRequest.gameData() != null) {
+            gameData = updateGameRequest.gameData();
+            updatedGame = updateGame(gameData, gameId, teamColor, username, true);
+        } else {
+            if (updateGameRequest.playerColor() == null) { throw new BadRequestException("Error: bad request"); }
+            teamColor = updateGameRequest.playerColor();
+            gameData = getGame(gameId);
+            updatedGame = updateGame(gameData, gameId, teamColor, username, false);
+        }
+
         String jsonChessGame = new Gson().toJson(updatedGame.game());
 
         var statement = "UPDATE game SET whiteUsername=?, blackUsername=?, gameName=?, json=? WHERE id=?";

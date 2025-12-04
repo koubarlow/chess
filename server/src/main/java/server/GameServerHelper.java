@@ -47,11 +47,11 @@ public class GameServerHelper {
         }
     }
 
-    public void joinGame(Context context) throws Exception {
+    public void updateGame(Context context) throws Exception {
         try {
             String authToken = context.header(Server.authTokenHeader);
-            JoinGameRequest joinGameRequest = new Gson().fromJson(context.body(), JoinGameRequest.class);
-            gameService.joinGame(authToken, joinGameRequest);
+            UpdateGameRequest updateGameRequest = new Gson().fromJson(context.body(), UpdateGameRequest.class);
+            gameService.updateGame(authToken, updateGameRequest);
         } catch (UnauthorizedException e) {
             context.json(e.toJson());
             context.status(401);

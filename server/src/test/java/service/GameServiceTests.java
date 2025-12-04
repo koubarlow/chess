@@ -79,8 +79,8 @@ public class GameServiceTests {
     @Order(5)
     @DisplayName("Join Game Success")
     public void joinGameSuccess() throws Exception {
-        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 300, "john");
-        testMemoryServer.fakeGameService.joinGame("123456789", joinGameRequest);
+        UpdateGameRequest updateGameRequest = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 300, "john", null);
+        testMemoryServer.fakeGameService.updateGame("123456789", updateGameRequest);
         GameList games = testMemoryServer.fakeGameService.listGames("123456789");
         GameData expected = new GameData(300, "john", null, "playWithMee", new ChessGame());
         Assertions.assertEquals(expected, games.getLast());
@@ -90,9 +90,9 @@ public class GameServiceTests {
     @Order(6)
     @DisplayName("Join Game Failure")
     public void joinGameAlreadyTaken() throws Exception {
-        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "john");
-        testMemoryServer.fakeGameService.joinGame("123456789", joinGameRequest);
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest(ChessGame.TeamColor.WHITE, 299, "kip");
-        Assertions.assertThrows(AlreadyTakenException.class, () -> testMemoryServer.fakeGameService.joinGame("123459876", joinGameRequest2));
+        UpdateGameRequest updateGameRequest = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 299, "john", null);
+        testMemoryServer.fakeGameService.updateGame("123456789", updateGameRequest);
+        UpdateGameRequest updateGameRequest2 = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 299, "kip", null);
+        Assertions.assertThrows(AlreadyTakenException.class, () -> testMemoryServer.fakeGameService.updateGame("123459876", updateGameRequest2));
     }
 }

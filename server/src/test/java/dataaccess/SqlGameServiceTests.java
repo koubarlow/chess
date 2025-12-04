@@ -80,8 +80,8 @@ public class SqlGameServiceTests {
     public void sqlJoinGameSuccess() throws Exception {
         sqlServerTests.testGameService.createGame(xAuthToken, new CreateGameRequest("testGameId1"));
         sqlServerTests.testGameService.createGame(yAuthToken, new CreateGameRequest("testGameId2"));
-        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 2, "y");
-        sqlServerTests.testGameService.joinGame(yAuthToken, joinGameRequest);
+        UpdateGameRequest updateGameRequest = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 2, "y", null);
+        sqlServerTests.testGameService.updateGame(yAuthToken, updateGameRequest);
         GameList games = sqlServerTests.testGameService.listGames(yAuthToken);
         GameData expected = new GameData(2, "y", null, "testGameId2", new ChessGame());
         Assertions.assertEquals(expected, games.get(1));
@@ -91,10 +91,10 @@ public class SqlGameServiceTests {
     @Order(6)
     @DisplayName("Join Game Failure")
     public void sqlJoinGameAlreadyTaken() throws Exception {
-        JoinGameRequest joinGameRequest = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, "x");
-        sqlServerTests.testGameService.joinGame(xAuthToken, joinGameRequest);
-        JoinGameRequest joinGameRequest2 = new JoinGameRequest(ChessGame.TeamColor.WHITE, 1, "z");
-        Assertions.assertThrows(AlreadyTakenException.class, () -> sqlServerTests.testGameService.joinGame(xAuthToken, joinGameRequest2));
+        UpdateGameRequest updateGameRequest = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 1, "x", null);
+        sqlServerTests.testGameService.updateGame(xAuthToken, updateGameRequest);
+        UpdateGameRequest updateGameRequest2 = new UpdateGameRequest(ChessGame.TeamColor.WHITE, 1, "z", null);
+        Assertions.assertThrows(AlreadyTakenException.class, () -> sqlServerTests.testGameService.updateGame(xAuthToken, updateGameRequest2));
     }
 
     @Test
