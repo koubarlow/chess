@@ -1,6 +1,7 @@
 package ui;
 
 import chess.*;
+import exception.ResponseException;
 
 import java.io.PrintStream;
 import java.nio.charset.StandardCharsets;
@@ -43,11 +44,19 @@ public class BoardDrawer {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final String[] BOARD_ROWS = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
 
-    public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) {
+    public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) throws ResponseException {
         ChessBoard board = chessGame.getBoard();
         Set<ChessMove> positionsToHighlight = new HashSet<>();
         if (highlightPossibleMoves) {
-            positionsToHighlight = collectValidMoves(chessGame, position);
+            ChessPiece pieceToHighlight = chessGame.getBoard().getPiece(position);
+            if (pieceToHighlight == null) {
+                throw new ResponseException(ResponseException.Code.ClientError, "No piece to highlight!");
+            }
+            if (pieceToHighlight.getTeamColor() != teamColor) {
+                positionsToHighlight = collectValidMoves(chessGame, position);
+            } else {
+                throw new ResponseException(ResponseException.Code.ClientError, "Unable to highlight opponent's piece!");
+            }
         }
 
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);

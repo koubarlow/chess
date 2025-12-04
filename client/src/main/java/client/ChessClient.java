@@ -263,8 +263,10 @@ public class ChessClient {
             try {
                 int initialCol = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
+                initialRow = rowMapper.get(initialRow);
                 int endCol = this.columnTable.get(params[1].charAt(0));
                 int endRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
+                endRow = rowMapper.get(endRow);
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
