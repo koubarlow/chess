@@ -3,6 +3,7 @@ package client.websocket;
 import com.google.gson.Gson;
 import exception.ResponseException;
 import jakarta.websocket.*;
+import websocket.commands.UserGameCommand;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
@@ -35,5 +36,32 @@ public class WebSocketFacade extends Endpoint {
         }
     }
 
+    @Override
+    public void onOpen(Session session, EndpointConfig endpointConfig) {
+    }
 
+    public void connect(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId);
+    }
+
+    public void makeMove(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameId);
+    }
+
+    public void leave(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.LEAVE, authToken, gameId);
+    }
+
+    public void resign(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId);
+    }
+
+    private void sendCommand(UserGameCommand.CommandType commandType, String authToken, int gameId) throws ResponseException {
+        try {
+            var command = new UserGameCommand(commandType, authToken, gameId);
+            this.session.getBasicRemote().sendText(new Gson().toJson(command));
+        } catch (IOException ex) {
+            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
+        }
+    }
 }
