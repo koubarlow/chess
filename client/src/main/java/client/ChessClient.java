@@ -1,6 +1,8 @@
 package client;
 
 import chess.*;
+import client.websocket.NotificationHandler;
+import client.websocket.WebSocketFacade;
 import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
@@ -11,14 +13,15 @@ import java.util.*;
 import static ui.EscapeSequences.*;
 import static ui.EscapeSequences.SET_TEXT_COLOR_GREEN;
 
-public class ChessClient {
+public class ChessClient implements NotificationHandler {
+
+    private final ServerFacade server;
+    private final WebSocketFacade ws;
 
     private String username = null;
     private AuthData authData = null;
-    private final ServerFacade server;
     private State state = State.SIGNEDOUT;
     private final HashMap<Integer, GameData> games;
-
     private ChessGame.TeamColor currentTeamColor;
     private int currentGameId;
     private final HashMap<Character, Integer> columnTable;
@@ -26,6 +29,8 @@ public class ChessClient {
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
+        ws = new WebSocketFacade(serverUrl, this);
+
         games = new HashMap<>();
         columnTable = new HashMap<>();
         rowMapper = new HashMap<>();
