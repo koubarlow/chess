@@ -9,6 +9,7 @@ import dataaccess.game.MySqlGameDAO;
 import dataaccess.user.MemoryUserDAO;
 import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
+import exception.ResponseException;
 import io.javalin.*;
 import service.AuthService;
 import service.GameService;
@@ -48,7 +49,12 @@ public class Server {
                 .post("/game", gameServerHelper::createGame)
                 .get("/game", gameServerHelper::listGames)
                 .put("/game", gameServerHelper::updateGame)
-                .delete("/db", clearServerHelper::clearApplication);
+                .delete("/db", clearServerHelper::clearApplication)
+                .ws("/ws", ws -> {
+                   ws.onConnect(webSocketHandler);
+                   ws.onMessage(webSocketHandler);
+                   ws.onClose(webSocketHandler);
+                });
     }
 
     public int run(int desiredPort) {
