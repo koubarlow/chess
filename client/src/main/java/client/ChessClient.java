@@ -263,9 +263,10 @@ public class ChessClient {
             try {
                 int initialCol = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
-                initialRow = rowMapper.get(initialRow);
                 int endCol = this.columnTable.get(params[1].charAt(0));
                 int endRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
+
+                initialRow = rowMapper.get(initialRow);
                 endRow = rowMapper.get(endRow);
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
@@ -273,6 +274,15 @@ public class ChessClient {
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
                 game.game().makeMove(new ChessMove(beginningPos, endPos, null));
+
+                ChessGame.TeamColor teamColorToSet;
+                if (currentTeamColor == ChessGame.TeamColor.WHITE) {
+                    teamColorToSet = ChessGame.TeamColor.BLACK;
+                } else {
+                    teamColorToSet = ChessGame.TeamColor.WHITE;
+                }
+                game.game().setTeamTurn(teamColorToSet);
+
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
