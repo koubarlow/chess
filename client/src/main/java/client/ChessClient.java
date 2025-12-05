@@ -7,6 +7,7 @@ import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
 import ui.BoardDrawer;
+import websocket.messages.ServerMessage;
 
 import java.util.*;
 
@@ -73,6 +74,11 @@ public class ChessClient implements NotificationHandler {
         }
 
         System.out.println();
+    }
+
+    public void notify(ServerMessage serverMessage) {
+        System.out.println(SET_TEXT_COLOR_MAGENTA + serverMessage);
+        printPrompt();
     }
 
     private void printPrompt() {
@@ -203,6 +209,8 @@ public class ChessClient implements NotificationHandler {
             this.currentGameId = gameId;
             this.state = State.GAMEPLAY;
             GameData game = server.getGameById(this.authData.authToken(), gameId);
+
+            ws.connect(authData.authToken(), currentGameId);
             BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
             return String.format("You joined game %s as %s.", gameId, this.currentTeamColor);
         }
@@ -231,6 +239,8 @@ public class ChessClient implements NotificationHandler {
             }
 
             GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
+            ws.connect(authData.authToken(), gameId);
+            this.state = State.OBSERVING;
             BoardDrawer.drawBoard(game.game(), teamColor, false, null);
             return String.format("You're observing game %s as %s.", gameId, teamColor);
         }
@@ -248,14 +258,15 @@ public class ChessClient implements NotificationHandler {
     }
 
     public String redrawBoard() throws ResponseException {
-        assertInGamePlay();
+        assertPlayingOrWatching();
         GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
         BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
         return "Board redrawn.";
     }
 
     public String leaveGame() throws ResponseException {
-        assertInGamePlay();
+        assertPlayingOrWatching();
+        ws.leave(authData.authToken(), currentGameId);
         this.state = State.SIGNEDIN;
         this.currentGameId = 0;
         this.currentTeamColor = null;
@@ -290,6 +301,7 @@ public class ChessClient implements NotificationHandler {
 
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
+                ws.makeMove(authData.authToken(), currentGameId);
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
@@ -303,12 +315,13 @@ public class ChessClient implements NotificationHandler {
 
     public String resign() throws ResponseException {
         assertInGamePlay();
+        ws.resign(authData.authToken(), currentGameId);
         this.state = State.SIGNEDIN;
         return "Resigning...";
     }
 
     public String highlightLegalMoves(String... params) throws ResponseException {
-        assertInGamePlay();
+        assertPlayingOrWatching();
         if (params.length == 1 && params[0].length() == 2) {
             try {
                 int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
@@ -370,7 +383,13 @@ public class ChessClient implements NotificationHandler {
     }
 
     private void assertInGamePlay() throws ResponseException {
-        if (state == State.SIGNEDOUT || state == State.SIGNEDIN) {
+        if (state != State.GAMEPLAY) {
+            throw new ResponseException(ResponseException.Code.ClientError, "Currently not playing game");
+        }
+    }
+
+    private void assertPlayingOrWatching() throws ResponseException {
+        if (state != State.GAMEPLAY && state != State.OBSERVING) {
             throw new ResponseException(ResponseException.Code.ClientError, "Currently not in game");
         }
     }

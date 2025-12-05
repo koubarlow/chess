@@ -46,16 +46,13 @@ public class BoardDrawer {
 
     public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) throws ResponseException {
         ChessBoard board = chessGame.getBoard();
+
         Set<ChessMove> positionsToHighlight = new HashSet<>();
         if (highlightPossibleMoves) {
             ChessPiece pieceToHighlight = chessGame.getBoard().getPiece(position);
+            positionsToHighlight = collectValidMoves(chessGame, position);
             if (pieceToHighlight == null) {
-                throw new ResponseException(ResponseException.Code.ClientError, "No piece to highlight!");
-            }
-            if (pieceToHighlight.getTeamColor() != teamColor) {
-                positionsToHighlight = collectValidMoves(chessGame, position);
-            } else {
-                throw new ResponseException(ResponseException.Code.ClientError, "Unable to highlight opponent's piece!");
+                throw new ResponseException(ResponseException.Code.ClientError, "No piece on selected square!");
             }
         }
 
