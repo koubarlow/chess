@@ -57,9 +57,6 @@ public class GameServerHelper {
             String authToken = context.header(Server.authTokenHeader);
             UpdateGameRequest updateGameRequest = new Gson().fromJson(context.body(), UpdateGameRequest.class);
             gameService.updateGame(authToken, updateGameRequest);
-            if (updateGameRequest.gameData() != null) {
-
-            }
         } catch (UnauthorizedException e) {
             context.json(e.toJson());
             context.status(401);

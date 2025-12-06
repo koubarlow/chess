@@ -283,6 +283,8 @@ public class ChessClient implements NotificationHandler {
     public String leaveGame() throws ResponseException {
         assertPlayingOrWatching();
         ws.leave(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
+        GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
+        // gotta update game! dont forget
         this.state = State.SIGNEDIN;
         this.currentGameId = 0;
         this.currentTeamColor = null;
