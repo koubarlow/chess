@@ -4,19 +4,29 @@ import org.eclipse.jetty.websocket.api.Session;
 import websocket.messages.ServerMessage;
 
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class ConnectionManager {
 
-    public final ConcurrentHashMap<Session, Session> connections = new ConcurrentHashMap<>();
+    public final HashMap<Integer, Set<Session>> connections = new HashMap<>();
 
-    public void add(Session session) { connections.put(session, session); }
+    public void addSessionToGame(int gameId, Session session) {
+        Set<Session> setOfSessions = connections.get(gameId);
+        setOfSessions.add(session);
+        connections.put(gameId, setOfSessions);
+    }
 
-    public void remove(Session session) { connections.remove(session); }
+    public void removeSessionFromGame(int gameId, Session session) {
+        Set<Session> setOfSessions = connections.get(gameId);
+        setOfSessions.remove(session);
+        connections.put(gameId, setOfSessions);
+    }
 
-    public void broadcast(Session excludeSession, ServerMessage serverMessage) throws IOException {
+    public void broadcast(int gameId, Session excludeSession, ServerMessage serverMessage) throws IOException {
         String msg = serverMessage.toString();
-        for (Session c : connections.values()) {
+        for (Session c : connections.get(gameId)) {
             if (c.isOpen()) {
                 if (!c.equals(excludeSession)) {
                     c.getRemote().sendString(msg);

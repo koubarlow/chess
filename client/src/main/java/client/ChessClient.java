@@ -76,9 +76,25 @@ public class ChessClient implements NotificationHandler {
         System.out.println();
     }
 
-    public void notify(ServerMessage serverMessage) {
-        System.out.println(SET_TEXT_COLOR_MAGENTA + serverMessage);
+    public void notify(ServerMessage serverMessage) throws ResponseException {
+        try {
+            switch (serverMessage.getServerMessageType()) {
+                case NOTIFICATION -> displayNotification(serverMessage.getMessage());
+                case ERROR -> displayError(serverMessage.getErrorMessage());
+                case LOAD_GAME -> redrawBoard();
+            }
+        } catch (ResponseException ex) {
+            System.out.println(ex.getMessage());
+        }
         printPrompt();
+    }
+
+    private void displayNotification(String msg) {
+        System.out.println(SET_TEXT_COLOR_MAGENTA + msg);
+    }
+
+    private void displayError(String msg) {
+        System.out.println(SET_TEXT_COLOR_RED + msg);
     }
 
     private void printPrompt() {
@@ -289,7 +305,9 @@ public class ChessClient implements NotificationHandler {
                 ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
-                game.game().makeMove(new ChessMove(beginningPos, endPos, null));
+
+                ChessMove moveToMake = new ChessMove(beginningPos, endPos, null)
+                game.game().makeMove(moveToMake);
 
                 ChessGame.TeamColor teamColorToSet;
                 if (currentTeamColor == ChessGame.TeamColor.WHITE) {
@@ -301,7 +319,7 @@ public class ChessClient implements NotificationHandler {
 
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
-                ws.makeMove(authData.authToken(), currentGameId);
+                ws.makeMove(authData.authToken(), currentGameId, moveToMake);
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {

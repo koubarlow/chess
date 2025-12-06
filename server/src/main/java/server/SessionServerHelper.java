@@ -6,14 +6,17 @@ import dataaccess.exceptions.DataAccessException;
 import dataaccess.exceptions.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
+import server.websocket.WebSocketHandler;
 import service.AuthService;
 
 public class SessionServerHelper {
 
     private final AuthService authService;
+    private final WebSocketHandler webSocketHandler;
 
-    public SessionServerHelper(AuthService authService) {
+    public SessionServerHelper(AuthService authService, WebSocketHandler webSocketHandler) {
         this.authService = authService;
+        this.webSocketHandler = webSocketHandler;
     }
 
     public void login(Context context) throws Exception {

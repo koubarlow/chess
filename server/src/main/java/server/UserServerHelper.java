@@ -8,14 +8,17 @@ import io.javalin.http.Context;
 import model.AuthData;
 import model.RegisterRequest;
 
+import server.websocket.WebSocketHandler;
 import service.UserService;
 
 public class UserServerHelper {
 
     private final UserService userService;
+    private final WebSocketHandler webSocketHandler;
 
-    public UserServerHelper(UserService userService) {
+    public UserServerHelper(UserService userService, WebSocketHandler webSocketHandler) {
         this.userService = userService;
+        this.webSocketHandler = webSocketHandler;
     }
 
     public void register(Context context) throws Exception {

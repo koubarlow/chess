@@ -11,6 +11,7 @@ import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
 import exception.ResponseException;
 import io.javalin.*;
+import server.websocket.WebSocketHandler;
 import service.AuthService;
 import service.GameService;
 import service.UserService;
@@ -18,6 +19,7 @@ import service.UserService;
 public class Server {
 
     private final Javalin javalin;
+    private final WebSocketHandler webSocketHandler;
     public static String authTokenHeader = "authorization";
 
     public Server() {
@@ -37,10 +39,12 @@ public class Server {
         AuthService authService = new AuthService(userDAO, authDAO);
         GameService gameService = new GameService(gameDAO, authDAO);
 
-        UserServerHelper userServerHelper = new UserServerHelper(userService);
-        SessionServerHelper sessionServerHelper = new SessionServerHelper(authService);
-        GameServerHelper gameServerHelper = new GameServerHelper(gameService);
-        ClearServerHelper clearServerHelper = new ClearServerHelper(gameService, authService, userService);
+        this.webSocketHandler = new WebSocketHandler();
+
+        UserServerHelper userServerHelper = new UserServerHelper(userService, webSocketHandler);
+        SessionServerHelper sessionServerHelper = new SessionServerHelper(authService, webSocketHandler);
+        GameServerHelper gameServerHelper = new GameServerHelper(gameService, webSocketHandler);
+        ClearServerHelper clearServerHelper = new ClearServerHelper(gameService, authService, userService, webSocketHandler);
 
         javalin = Javalin.create(config -> config.staticFiles.add("web"))
                 .post("/user", userServerHelper::register)

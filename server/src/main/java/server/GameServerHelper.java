@@ -7,13 +7,18 @@ import dataaccess.exceptions.DataAccessException;
 import dataaccess.exceptions.UnauthorizedException;
 import io.javalin.http.Context;
 import model.*;
+import server.websocket.WebSocketHandler;
 import service.GameService;
 
 public class GameServerHelper {
 
     private final GameService gameService;
+    private final WebSocketHandler webSocketHandler;
 
-    public GameServerHelper(GameService gameService) { this.gameService = gameService; }
+    public GameServerHelper(GameService gameService, WebSocketHandler webSocketHandler) {
+        this.gameService = gameService;
+        this.webSocketHandler = webSocketHandler;
+    }
 
     public void createGame(Context context) throws Exception {
         try {
@@ -52,6 +57,9 @@ public class GameServerHelper {
             String authToken = context.header(Server.authTokenHeader);
             UpdateGameRequest updateGameRequest = new Gson().fromJson(context.body(), UpdateGameRequest.class);
             gameService.updateGame(authToken, updateGameRequest);
+            if (updateGameRequest.gameData() != null) {
+
+            }
         } catch (UnauthorizedException e) {
             context.json(e.toJson());
             context.status(401);
