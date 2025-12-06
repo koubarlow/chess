@@ -14,11 +14,13 @@ public class ChessGame {
 
     private ChessBoard board;
     private TeamColor teamTurn;
+    private boolean gameOver;
 
     public ChessGame() {
         this.board = new ChessBoard();
         board.resetBoard();
         this.setTeamTurn(TeamColor.WHITE);
+        this.gameOver = false;
     }
 
     /**
@@ -35,6 +37,14 @@ public class ChessGame {
      */
     public void setTeamTurn(TeamColor team) {
         this.teamTurn = team;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
+    public boolean isGameOver() {
+        return gameOver;
     }
 
     /**
@@ -96,6 +106,10 @@ public class ChessGame {
         }
 
         // SET TEAM TURN
+        if (isInCheckmate(TeamColor.BLACK) || isInCheckmate(TeamColor.WHITE) || isInStalemate(TeamColor.BLACK) || isInStalemate(TeamColor.WHITE)) {
+            this.gameOver = true;
+        }
+
         if (pieceToMove.getTeamColor() == TeamColor.BLACK) {
             this.setTeamTurn(TeamColor.WHITE);
         } else {

@@ -8,6 +8,7 @@ import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
 import dataaccess.exceptions.UnauthorizedException;
+import dataaccess.game.GameDAO;
 import dataaccess.game.MySqlGameDAO;
 import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
@@ -27,6 +28,7 @@ import java.util.Objects;
 public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsCloseHandler {
 
     private final ConnectionManager connections = new ConnectionManager();
+    MySqlGameDAO gameDAO;
 
     @Override
     public void handleConnect(WsConnectContext ctx) {
@@ -46,7 +48,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             AuthDAO authDAO = new MySqlAuthDAO();
             UserDAO userDAO = new MySqlUserDAO();
-            MySqlGameDAO gameDAO = new MySqlGameDAO();
+            this.gameDAO = new MySqlGameDAO();
 
             String username = authDAO.getUsername(command.getAuthToken());
             UserData user = userDAO.getUser(username);
@@ -90,7 +92,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, gameId, username, color, game);
                 case LEAVE -> leave(session, gameId, username, color);
-                case RESIGN -> resign(session, gameId, username, color);
+                case RESIGN -> resign(session, gameId, username, color, game, command.getAuthToken());
                 case MAKE_MOVE -> makeMove(session, gameId, username, color, game, move);
             }
         } catch (IOException ex) {
@@ -134,14 +136,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(gameId, session, serverMessage);
     }
 
-    private void resign(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
-        connections.addGameToGamesThatAreOver(gameId);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.name()), null);
-        connections.broadcast(gameId, null, serverMessage);
+    private void resign(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, String authToken) throws Exception {
+        if (!game.game().isGameOver()) {
+            game.game().setGameOver(true);
+            gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.name()), null);
+            connections.broadcast(gameId, null, serverMessage);
+        } else {
+            var gameAlreadyOver = new ErrorMessage("Game is already over.");
+            session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
+        }
     }
 
     private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move) throws IOException {
-        if (connections.gamesThatAreOver.contains(gameId)) {
+        if (game.game().isGameOver()) {
             var gameAlreadyOver = new ErrorMessage("Game is already over.");
             session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
             return;
