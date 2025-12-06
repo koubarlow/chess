@@ -6,14 +6,21 @@ import chess.ChessPiece;
 import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
+import dataaccess.exceptions.UnauthorizedException;
 import dataaccess.game.MySqlGameDAO;
+import dataaccess.user.MySqlUserDAO;
+import dataaccess.user.UserDAO;
+import exception.ResponseException;
 import io.javalin.websocket.*;
 import model.GameData;
+import model.UserData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
+import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
 
+import javax.imageio.IIOException;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -38,10 +45,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameId = command.getGameID();
 
             AuthDAO authDAO = new MySqlAuthDAO();
+            UserDAO userDAO = new MySqlUserDAO();
             MySqlGameDAO gameDAO = new MySqlGameDAO();
 
             String username = authDAO.getUsername(command.getAuthToken());
+            UserData user = userDAO.getUser(username);
+            if (username == null || user == null) {
+                throw new UnauthorizedException("Error: unauthorized");
+            }
+
             GameData game = gameDAO.getGame(gameId);
+            if (game == null) {
+                throw new ResponseException(ResponseException.Code.ClientError, "Error: game not found");
+            }
 
             ChessMove move = command.getMove();
             ChessGame.TeamColor color = null;
@@ -59,9 +75,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             }
         } catch (IOException ex) {
             ex.printStackTrace();
-            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage(), null));
+            var errorMessage = new ErrorMessage(ex.getMessage());
+            session.getRemote().sendString(new Gson().toJson(errorMessage));
         } catch (Exception ex) {
-            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage(), null));
+            var errorMessage = new ErrorMessage(ex.getMessage());
+            session.getRemote().sendString(new Gson().toJson(errorMessage));
         }
     }
 

@@ -20,6 +20,7 @@ public class ConnectionManager {
         if (setOfSessions == null) {
             setOfSessions = new HashSet<>();
         }
+
         setOfSessions.add(session);
         connections.put(gameId, setOfSessions);
     }

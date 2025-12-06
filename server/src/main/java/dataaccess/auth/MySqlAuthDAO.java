@@ -42,7 +42,11 @@ public class MySqlAuthDAO implements AuthDAO {
     }
 
     public String getUsername(String authToken) throws Exception {
-        return getAuth(authToken).username();
+        String username = getAuth(authToken).username();
+        if (username == null) {
+            throw new UnauthorizedException("Error: unauthorized");
+        }
+        return username;
     }
 
     public AuthData getAuth(String authToken) throws Exception {
