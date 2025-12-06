@@ -1,9 +1,6 @@
 package server.websocket;
 
-import chess.ChessGame;
-import chess.ChessMove;
-import chess.ChessPiece;
-import chess.ChessPosition;
+import chess.*;
 import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
@@ -164,16 +161,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         boolean isInCheckmate = game.game().isInCheckmate(color);
         boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
         if (isInCheckmate || isOpponentInCheckmate) {
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, String.format("%s has been checkmated! Good game.", color.name()), null);
+            var checkmateMessage = new ErrorMessage(String.format("%s has been checkmated! Good game.", color.name()));
             connections.broadcast(gameId, null, checkmateMessage);
             return;
         } else if (game.game().isInCheck(color)) {
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, String.format("%s is in check!", color.name()), null);
+            var checkmateMessage = new ErrorMessage(String.format("%s is in check!", color.name()));
             connections.broadcast(gameId, null, checkmateMessage);
             return;
         } else if (game.game().isInStalemate(color)) {
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Stalemate! Good game.", null);
+            var checkmateMessage = new ErrorMessage("Stalemate! Good game.");
             connections.broadcast(gameId, null, checkmateMessage);
+            return;
+        }
+
+        try {
+            game.game().makeMove(move);
+        } catch (InvalidMoveException e) {
+            var invalidMoveMessage = new ErrorMessage("Error: invalid move!");
+            session.getRemote().sendString(new Gson().toJson(invalidMoveMessage));
             return;
         }
 
@@ -187,7 +192,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             pieceName = pieceToDisplay.getPieceType().name();
         }
 
-        game.game().makeMove(move);
         gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
 
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
