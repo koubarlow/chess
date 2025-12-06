@@ -33,20 +33,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             UserGameCommand command = new Gson().fromJson(ctx.message(), UserGameCommand.class);
             gameId = command.getGameID();
-            String username = getUsername(command.getAuthToken());
-            connections.addSessionToGame(gameId, session);
+            String username = command.getUsername();
+            ChessGame.TeamColor color = command.getColor();
+            ChessMove move = command.getMove();
+            ChessPiece piece = command.getPiece();
 
             switch (command.getCommandType()) {
-                case CONNECT -> connect(session, username, (ConnectCommand) command);
-                case LEAVE -> leave(session, username, (LeaveGameCommand) command);
-                case RESIGN -> resign(session, username, (ResignCommand) command);
-                case MAKE_MOVE -> makeMove(session, username, (MakeMoveCommand) command);
+                case CONNECT -> connect(session, gameId, username, color);
+                case LEAVE -> leave(session, gameId, username, color);
+                case RESIGN -> resign(session, gameId, username, color);
+                case MAKE_MOVE -> makeMove(session, gameId, username, color, piece, move.getStartPosition().toString(), move.getEndPosition().toString());
             }
-        } catch (UnauthorizedException ex) {
-            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
         } catch (IOException ex) {
             ex.printStackTrace();
-            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR));
+            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
+        } catch (Exception ex) {
+            connections.broadcast(gameId, session, new ServerMessage(ServerMessage.ServerMessageType.ERROR, ex.getMessage()));
         }
     }
 

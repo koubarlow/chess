@@ -76,11 +76,11 @@ public class ChessClient implements NotificationHandler {
         System.out.println();
     }
 
-    public void notify(ServerMessage serverMessage) throws ResponseException {
+    public void notify(ServerMessage serverMessage) {
         try {
             switch (serverMessage.getServerMessageType()) {
                 case NOTIFICATION -> displayNotification(serverMessage.getMessage());
-                case ERROR -> displayError(serverMessage.getErrorMessage());
+                case ERROR -> displayError(serverMessage.getMessage());
                 case LOAD_GAME -> redrawBoard();
             }
         } catch (ResponseException ex) {
