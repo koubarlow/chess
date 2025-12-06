@@ -95,6 +95,7 @@ public class ChessGame {
             throw new InvalidMoveException("Current team king in danger, unable to move");
         }
 
+        // SET TEAM TURN
         if (pieceToMove.getTeamColor() == TeamColor.BLACK) {
             this.setTeamTurn(TeamColor.WHITE);
         } else {

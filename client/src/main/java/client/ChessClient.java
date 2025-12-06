@@ -303,9 +303,6 @@ public class ChessClient implements NotificationHandler {
                 int endCol = this.columnTable.get(params[1].charAt(0));
                 int endRow = Integer.parseInt(String.valueOf(params[1].charAt(1)));
 
-                initialRow = rowMapper.get(initialRow);
-                endRow = rowMapper.get(endRow);
-
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 ChessPosition beginningPos = new ChessPosition(initialRow, initialCol);
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
@@ -313,14 +310,6 @@ public class ChessClient implements NotificationHandler {
 
                 ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
                 game.game().makeMove(moveToMake);
-
-                ChessGame.TeamColor teamColorToSet;
-                if (currentTeamColor == ChessGame.TeamColor.WHITE) {
-                    teamColorToSet = ChessGame.TeamColor.BLACK;
-                } else {
-                    teamColorToSet = ChessGame.TeamColor.WHITE;
-                }
-                game.game().setTeamTurn(teamColorToSet);
 
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
@@ -349,7 +338,6 @@ public class ChessClient implements NotificationHandler {
             try {
                 int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int row = Integer.parseInt(String.valueOf(params[0].charAt(1)));
-                row = rowMapper.get(row);
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, true, new ChessPosition(row, col));

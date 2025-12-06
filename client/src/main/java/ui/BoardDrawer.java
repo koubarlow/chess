@@ -42,7 +42,7 @@ import static ui.EscapeSequences.WHITE_ROOK;
 public class BoardDrawer {
 
     private static final int BOARD_SIZE_IN_SQUARES = 8;
-    private static final String[] BOARD_ROWS = {" 8 ", " 7 ", " 6 ", " 5 ", " 4 ", " 3 ", " 2 ", " 1 " };
+    private static final String[] BOARD_ROWS = {" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 " };
 
     public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) throws ResponseException {
         ChessBoard board = chessGame.getBoard();
@@ -109,7 +109,7 @@ public class BoardDrawer {
 
     private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
 
-        if (color == ChessGame.TeamColor.WHITE) {
+        if (color == ChessGame.TeamColor.BLACK) {
             for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
                 drawRowOfSquares(out, board, boardRow, color, movesToHighlight, posToSpecialHighlight);
 
