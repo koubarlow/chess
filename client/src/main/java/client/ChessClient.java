@@ -226,7 +226,7 @@ public class ChessClient implements NotificationHandler {
             this.state = State.GAMEPLAY;
             GameData game = server.getGameById(this.authData.authToken(), gameId);
 
-            ws.connect(authData.authToken(), currentGameId);
+            ws.connect(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
             BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
             return String.format("You joined game %s as %s.", gameId, this.currentTeamColor);
         }
@@ -255,7 +255,7 @@ public class ChessClient implements NotificationHandler {
             }
 
             GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
-            ws.connect(authData.authToken(), gameId);
+            ws.connect(authData.authToken(), this.currentGameId, this.username, null);
             this.state = State.OBSERVING;
             BoardDrawer.drawBoard(game.game(), teamColor, false, null);
             return String.format("You're observing game %s as %s.", gameId, teamColor);
@@ -282,7 +282,7 @@ public class ChessClient implements NotificationHandler {
 
     public String leaveGame() throws ResponseException {
         assertPlayingOrWatching();
-        ws.leave(authData.authToken(), currentGameId);
+        ws.leave(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
         this.state = State.SIGNEDIN;
         this.currentGameId = 0;
         this.currentTeamColor = null;
@@ -306,7 +306,7 @@ public class ChessClient implements NotificationHandler {
                 ChessPosition endPos = new ChessPosition(endRow, endCol);
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
 
-                ChessMove moveToMake = new ChessMove(beginningPos, endPos, null)
+                ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
                 game.game().makeMove(moveToMake);
 
                 ChessGame.TeamColor teamColorToSet;
@@ -319,7 +319,7 @@ public class ChessClient implements NotificationHandler {
 
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
-                ws.makeMove(authData.authToken(), currentGameId, moveToMake);
+                ws.makeMove(authData.authToken(), currentGameId, moveToMake, this.username, this.currentTeamColor, pieceToMove.getPieceType().name());
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
@@ -333,7 +333,7 @@ public class ChessClient implements NotificationHandler {
 
     public String resign() throws ResponseException {
         assertInGamePlay();
-        ws.resign(authData.authToken(), currentGameId);
+        ws.resign(authData.authToken(), currentGameId, this.username, this.currentTeamColor);
         this.state = State.SIGNEDIN;
         return "Resigning...";
     }

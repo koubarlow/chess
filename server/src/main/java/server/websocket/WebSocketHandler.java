@@ -36,13 +36,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             String username = command.getUsername();
             ChessGame.TeamColor color = command.getColor();
             ChessMove move = command.getMove();
-            ChessPiece piece = command.getPiece();
+            String pieceName = command.getPieceName();
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, gameId, username, color);
                 case LEAVE -> leave(session, gameId, username, color);
                 case RESIGN -> resign(session, gameId, username, color);
-                case MAKE_MOVE -> makeMove(session, gameId, username, color, piece, move.getStartPosition().toString(), move.getEndPosition().toString());
+                case MAKE_MOVE -> makeMove(session, gameId, username, color, pieceName, move.getStartPosition().toString(), move.getEndPosition().toString());
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -57,7 +57,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
         connections.addSessionToGame(gameId, session);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s joined the game as %s", username, color.toString()));
+        String teamColor = color.toString();
+        if (teamColor == null) {
+            teamColor = "OBSERVER";
+        }
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s joined the game as %s", username, teamColor));
         connections.broadcast(gameId, session, serverMessage);
     }
 
@@ -73,8 +77,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(gameId, session, serverMessage);
     }
 
-    public void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, ChessPiece piece, String startingPos, String endPos) throws IOException {
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, String.format("%s(%s) has moved %s from %s to %s", username, color.toString(), piece.getPieceType().toString(), startingPos, endPos));
+    public void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, String pieceName, String startingPos, String endPos) throws IOException {
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, String.format("%s(%s) has moved %s from %s to %s", username, color.toString(), pieceName, startingPos, endPos));
         connections.broadcast(gameId, session, serverMessage);
     }
 }

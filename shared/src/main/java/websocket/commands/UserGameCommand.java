@@ -26,16 +26,16 @@ public class UserGameCommand {
 
     private final ChessGame.TeamColor color;
 
-    private final ChessPiece piece;
+    private final String pieceName;
 
-    public UserGameCommand(CommandType commandType, String authToken, Integer gameID, String username, ChessMove move, ChessGame.TeamColor color, ChessPiece piece) {
+    public UserGameCommand(CommandType commandType, String authToken, Integer gameID, String username, ChessMove move, ChessGame.TeamColor color, String pieceName) {
         this.commandType = commandType;
         this.authToken = authToken;
         this.gameID = gameID;
         this.move = move;
         this.username = username;
         this.color = color;
-        this.piece = piece;
+        this.pieceName = pieceName;
     }
 
     public enum CommandType {
@@ -61,7 +61,7 @@ public class UserGameCommand {
 
     public String getUsername() { return username; }
 
-    public ChessPiece getPiece() { return piece; }
+    public String getPieceName() { return pieceName; }
 
     public ChessGame.TeamColor getColor() { return color; }
 
