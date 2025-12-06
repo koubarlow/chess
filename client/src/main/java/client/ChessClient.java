@@ -7,7 +7,6 @@ import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
 import ui.BoardDrawer;
-import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
@@ -82,7 +81,7 @@ public class ChessClient implements NotificationHandler {
             switch (serverMessage.getServerMessageType()) {
                 case NOTIFICATION -> displayNotification(serverMessage.getMessage());
                 case ERROR -> displayError(serverMessage.getMessage());
-                case LOAD_GAME -> redrawBoard();
+                case LOAD_GAME -> loadGame();
             }
         } catch (ResponseException ex) {
             System.out.println(ex.getMessage());
@@ -284,6 +283,10 @@ public class ChessClient implements NotificationHandler {
         return "Board redrawn.";
     }
 
+    private void loadGame() throws ResponseException {
+        redrawBoard();
+    }
+
     public String leaveGame() throws ResponseException {
         assertPlayingOrWatching();
         ws.leave(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
@@ -312,9 +315,15 @@ public class ChessClient implements NotificationHandler {
                 ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
                 game.game().makeMove(moveToMake);
 
-                if (pieceToMove.getTeamColor() == this.currentTeamColor) {
-                    server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
-                }
+//                if (pieceToMove.getTeamColor() == this.currentTeamColor) {
+//                    ChessGame.TeamColor opposingColor = ChessGame.TeamColor.WHITE;
+//                    if (currentTeamColor == ChessGame.TeamColor.BLACK) {
+//                        opposingColor = ChessGame.TeamColor.BLACK;
+//                    }
+//                    if (!game.game().isInCheckmate(currentTeamColor) || !game.game().isInCheckmate(opposingColor)) {
+//                    }
+//                }
+                server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
                 ws.makeMove(authData.authToken(), currentGameId, moveToMake, this.username, this.currentTeamColor, pieceToMove.getPieceType().name());
 
                 //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);

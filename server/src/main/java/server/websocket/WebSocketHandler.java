@@ -3,6 +3,7 @@ package server.websocket;
 import chess.ChessGame;
 import chess.ChessMove;
 import chess.ChessPiece;
+import chess.ChessPosition;
 import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
@@ -13,14 +14,13 @@ import dataaccess.user.UserDAO;
 import exception.ResponseException;
 import io.javalin.websocket.*;
 import model.GameData;
+import model.UpdateGameRequest;
 import model.UserData;
 import org.eclipse.jetty.websocket.api.Session;
 import org.jetbrains.annotations.NotNull;
 import websocket.commands.UserGameCommand;
 import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
-
-import javax.imageio.IIOException;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -69,14 +69,22 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             ChessMove move = command.getMove();
             if (move != null) {
-                ChessGame.TeamColor colorOfMovedPiece = game.game().getBoard().getPiece(move.getStartPosition()).getTeamColor();
+                ChessPiece movedPiece = game.game().getBoard().getPiece(move.getStartPosition());
+                ChessGame.TeamColor colorOfMovedPiece = movedPiece.getTeamColor();
+
                 if (colorOfMovedPiece != null && colorOfMovedPiece != color) {
                     throw new ResponseException(ResponseException.Code.ClientError, "Error: unable to move opponent's piece!");
                 }
 
-                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
-                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
+                if (game.game().isInCheckmate(color)) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "Error: already in checkmate!");
+                } else if (game.game().isInStalemate(color)) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "Error: already in stalemate!");
                 }
+
+//                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
+//                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
+//                }
             }
 
             switch (command.getCommandType()) {
@@ -127,12 +135,39 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
     }
 
     private void resign(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
-        connections.removeSessionFromGame(gameId, session);
+        connections.addGameToGamesThatAreOver(gameId);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.name()), null);
-        connections.broadcast(gameId, session, serverMessage);
+        connections.broadcast(gameId, null, serverMessage);
     }
 
     private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move) throws IOException {
+        if (connections.gamesThatAreOver.contains(gameId)) {
+            var gameAlreadyOver = new ErrorMessage("Game is already over.");
+            session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
+            return;
+        }
+
+        ChessGame.TeamColor opposingColor = ChessGame.TeamColor.BLACK;
+        if (color == ChessGame.TeamColor.BLACK) {
+            opposingColor = ChessGame.TeamColor.WHITE;
+        }
+
+        boolean isInCheckmate = game.game().isInCheckmate(color);
+        boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
+        if (isInCheckmate || isOpponentInCheckmate) {
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, String.format("%s has been checkmated! Good game.", color.name()), null);
+            connections.broadcast(gameId, null, checkmateMessage);
+            return;
+        } else if (game.game().isInCheck(color)) {
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, String.format("%s is in check!", color.name()), null);
+            connections.broadcast(gameId, null, checkmateMessage);
+            return;
+        } else if (game.game().isInStalemate(color)) {
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.ERROR, "Stalemate! Good game.", null);
+            connections.broadcast(gameId, null, checkmateMessage);
+            return;
+        }
+
         var loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, game);
         connections.broadcast(gameId, null, loadGameMessage);
         //session.getRemote().sendString(new Gson().toJson(loadGameMessage));

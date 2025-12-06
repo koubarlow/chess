@@ -13,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class ConnectionManager {
 
     public final HashMap<Integer, Set<Session>> connections = new HashMap<>();
+    public final HashSet<Integer> gamesThatAreOver = new HashSet<>();
 
     public void addSessionToGame(int gameId, Session session) {
 
@@ -23,6 +24,10 @@ public class ConnectionManager {
 
         setOfSessions.add(session);
         connections.put(gameId, setOfSessions);
+    }
+
+    public void addGameToGamesThatAreOver(int gameId) {
+        gamesThatAreOver.add(gameId);
     }
 
     public void removeSessionFromGame(int gameId, Session session) {
