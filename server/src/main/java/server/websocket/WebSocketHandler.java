@@ -2,6 +2,7 @@ package server.websocket;
 
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
@@ -69,9 +70,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void connect(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game) throws IOException {
         connections.addSessionToGame(gameId, session);
-        String teamColor = null;
+        String teamColor = "";
         if (color == null) {
-            teamColor = "OBSERVER";
+            teamColor = "an OBSERVER";
         } else {
             teamColor = color.name();
         }
@@ -97,11 +98,16 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move) throws IOException {
         var loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, game);
-        session.getRemote().sendString(new Gson().toJson(loadGameMessage));
+        connections.broadcast(gameId, null, loadGameMessage);
+        //session.getRemote().sendString(new Gson().toJson(loadGameMessage));
 
-        String pieceName = game.game().getBoard().getPiece(move.getStartPosition()).toString();
+        ChessPiece pieceToDisplay = game.game().getBoard().getPiece(move.getEndPosition());
+        String pieceName = "a piece";
+        if (pieceToDisplay != null) {
+            pieceName = pieceToDisplay.getPieceType().name();
+        }
 
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, String.format("%s(%s) has moved %s from %s to %s", username, color.toString(), pieceName, move.getStartPosition(), move.getEndPosition()), null);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.toString(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
         connections.broadcast(gameId, session, serverMessage);
     }
 

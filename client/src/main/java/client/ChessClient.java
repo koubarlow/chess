@@ -227,7 +227,7 @@ public class ChessClient implements NotificationHandler {
             GameData game = server.getGameById(this.authData.authToken(), gameId);
 
             ws.connect(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
-            BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+            //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
             return String.format("You joined game %s as %s.", gameId, this.currentTeamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
@@ -245,9 +245,9 @@ public class ChessClient implements NotificationHandler {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid game number");
             }
 
-            ChessGame.TeamColor teamColor = ChessGame.TeamColor.WHITE;
+            this.currentTeamColor = ChessGame.TeamColor.WHITE;
             if (params.length >= 2 && Objects.equals(params[1], "black")) {
-                teamColor = ChessGame.TeamColor.BLACK;
+                this.currentTeamColor = ChessGame.TeamColor.BLACK;
             }
 
             if (this.games.get(gameId) == null) {
@@ -255,10 +255,12 @@ public class ChessClient implements NotificationHandler {
             }
 
             GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
+            this.currentGameId = gameId;
+
             ws.connect(authData.authToken(), this.currentGameId, this.username, null);
             this.state = State.OBSERVING;
-            BoardDrawer.drawBoard(game.game(), teamColor, false, null);
-            return String.format("You're observing game %s as %s.", gameId, teamColor);
+            BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+            return String.format("You're observing game %s as %s.", gameId, this.currentTeamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
     }
@@ -275,6 +277,7 @@ public class ChessClient implements NotificationHandler {
 
     public String redrawBoard() throws ResponseException {
         assertPlayingOrWatching();
+        System.out.println();
         GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
         BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
         return "Board redrawn.";
@@ -322,7 +325,7 @@ public class ChessClient implements NotificationHandler {
                 server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
 
                 ws.makeMove(authData.authToken(), currentGameId, moveToMake, this.username, this.currentTeamColor, pieceToMove.getPieceType().name());
-                BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+                //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column for piece");
