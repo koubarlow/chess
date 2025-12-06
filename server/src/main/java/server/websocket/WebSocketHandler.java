@@ -93,7 +93,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 case CONNECT -> connect(session, gameId, username, color, game);
                 case LEAVE -> leave(session, gameId, username, color);
                 case RESIGN -> resign(session, gameId, username, color, game, command.getAuthToken());
-                case MAKE_MOVE -> makeMove(session, gameId, username, color, game, move);
+                case MAKE_MOVE -> makeMove(session, gameId, username, color, game, move, command.getAuthToken());
             }
         } catch (IOException ex) {
             ex.printStackTrace();
@@ -148,7 +148,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move) throws IOException {
+    private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move, String authToken) throws Exception {
+
         if (game.game().isGameOver()) {
             var gameAlreadyOver = new ErrorMessage("Game is already over.");
             session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
@@ -185,6 +186,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if (pieceToDisplay != null) {
             pieceName = pieceToDisplay.getPieceType().name();
         }
+
+        game.game().makeMove(move);
+        gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
 
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
         connections.broadcast(gameId, session, serverMessage);
