@@ -59,12 +59,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 throw new ResponseException(ResponseException.Code.ClientError, "Error: game not found");
             }
 
-            ChessMove move = command.getMove();
             ChessGame.TeamColor color = null;
+
             if (Objects.equals(game.whiteUsername(), username)) {
                 color = ChessGame.TeamColor.WHITE;
             } else if (Objects.equals(game.blackUsername(), username)) {
                 color = ChessGame.TeamColor.BLACK;
+            }
+
+            ChessMove move = command.getMove();
+            if (move != null) {
+                ChessGame.TeamColor colorOfMovedPiece = game.game().getBoard().getPiece(move.getStartPosition()).getTeamColor();
+                if (colorOfMovedPiece != null && colorOfMovedPiece != color) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "Error: unable to move opponent's piece!");
+                }
+
+                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
+                }
             }
 
             switch (command.getCommandType()) {
@@ -104,13 +116,19 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void leave(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
         connections.removeSessionFromGame(gameId, session);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has left the game", username, color.toString()), null);
+        String teamColor = "";
+        if (color == null) {
+            teamColor = "OBSERVER";
+        } else {
+            teamColor = color.name();
+        }
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has left the game", username, teamColor), null);
         connections.broadcast(gameId, session, serverMessage);
     }
 
     private void resign(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
         connections.removeSessionFromGame(gameId, session);
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.toString()), null);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.name()), null);
         connections.broadcast(gameId, session, serverMessage);
     }
 
@@ -125,7 +143,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             pieceName = pieceToDisplay.getPieceType().name();
         }
 
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.toString(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
         connections.broadcast(gameId, session, serverMessage);
     }
 

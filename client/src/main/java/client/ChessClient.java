@@ -7,6 +7,7 @@ import exception.ResponseException;
 import model.*;
 import server.ServerFacade;
 import ui.BoardDrawer;
+import websocket.messages.ErrorMessage;
 import websocket.messages.ServerMessage;
 
 import java.util.*;
@@ -311,9 +312,11 @@ public class ChessClient implements NotificationHandler {
                 ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
                 game.game().makeMove(moveToMake);
 
-                server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
-
+                if (pieceToMove.getTeamColor() == this.currentTeamColor) {
+                    server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
+                }
                 ws.makeMove(authData.authToken(), currentGameId, moveToMake, this.username, this.currentTeamColor, pieceToMove.getPieceType().name());
+
                 //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
