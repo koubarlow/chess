@@ -84,9 +84,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     throw new ResponseException(ResponseException.Code.ClientError, "Error: already in stalemate!");
                 }
 
-//                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
-//                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
-//                }
+                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
+                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
+                }
             }
 
             switch (command.getCommandType()) {
