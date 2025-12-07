@@ -88,7 +88,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
             switch (command.getCommandType()) {
                 case CONNECT -> connect(session, gameId, username, color, game);
-                case LEAVE -> leave(session, gameId, username, color);
+                case LEAVE -> leave(session, gameId, username, color, command.getAuthToken());
                 case RESIGN -> resign(session, gameId, username, color, game, command.getAuthToken());
                 case MAKE_MOVE -> makeMove(session, gameId, username, color, game, move, command.getAuthToken());
             }
@@ -121,7 +121,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(gameId, session, serverMessage);
     }
 
-    private void leave(Session session, int gameId, String username, ChessGame.TeamColor color) throws IOException {
+    private void leave(Session session, int gameId, String username, ChessGame.TeamColor color, String authToken) throws Exception {
         connections.removeSessionFromGame(gameId, session);
         String teamColor = "";
         if (color == null) {
@@ -129,6 +129,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         } else {
             teamColor = color.name();
         }
+
+        GameData game = gameDAO.getGame(gameId);
+        GameData newGameData = null;
+
+        if (color != null) {
+            if (color == ChessGame.TeamColor.WHITE) {
+                newGameData = new GameData(game.gameID(), null, game.blackUsername(), game.gameName(), game.game());
+            } else {
+                newGameData = new GameData(game.gameID(), game.whiteUsername(), null, game.gameName(), game.game());
+            }
+
+            gameDAO.updateGame(new UpdateGameRequest(null, gameId, null, newGameData), authToken);
+        }
+
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has left the game", username, teamColor), null);
         connections.broadcast(gameId, session, serverMessage);
     }
