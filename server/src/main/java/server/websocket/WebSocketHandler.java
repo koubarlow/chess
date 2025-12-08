@@ -164,20 +164,20 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         }
     }
 
-    private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move, String authToken) throws Exception {
+    private void makeMove(Session s, int gameId, String u, ChessGame.TeamColor c, GameData game, ChessMove move, String authToken) throws Exception {
 
-        if (gameStatusUpdated(session, gameId, game, color)) {
+        if (gameStatusUpdated(s, gameId, game, c)) {
             return;
         }
 
         try {
             game.game().makeMove(move);
-            inStalemate(gameId, game, color);
-            playerInCheck(gameId, game, color);
-            inCheckmate(gameId, game, color);
+            inStalemate(gameId, game, c);
+            playerInCheck(gameId, game, c);
+            inCheckmate(gameId, game, c);
         } catch (InvalidMoveException e) {
             var invalidMoveMessage = new ErrorMessage("Error: invalid move");
-            session.getRemote().sendString(new Gson().toJson(invalidMoveMessage));
+            s.getRemote().sendString(new Gson().toJson(invalidMoveMessage));
             return;
         }
 
@@ -190,13 +190,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             pieceName = pieceToDisplay.getPieceType().name();
         }
 
-        gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
+        gameDAO.updateGame(new UpdateGameRequest(c, gameId, null, game), authToken);
 
         String boardStartPos = move.getStartPosition().toChessTablePosition();
         String boardEndPos = move.getEndPosition().toChessTablePosition();
-        String movedMsg = String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, boardStartPos, boardEndPos);
+        String movedMsg = String.format("%s(%s) has moved %s from %s to %s", u, c.name(), pieceName, boardStartPos, boardEndPos);
         var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, movedMsg, null);
-        connections.broadcast(gameId, session, serverMessage);
+        connections.broadcast(gameId, s, serverMessage);
     }
 
     private boolean gameStatusUpdated(Session session, int gameId, GameData game, ChessGame.TeamColor color) throws IOException {

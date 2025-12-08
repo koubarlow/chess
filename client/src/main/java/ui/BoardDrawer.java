@@ -37,13 +37,13 @@ public class BoardDrawer {
     private static final int BOARD_SIZE_IN_SQUARES = 8;
     private static final String[] BOARD_ROWS = {" 1 ", " 2 ", " 3 ", " 4 ", " 5 ", " 6 ", " 7 ", " 8 " };
 
-    public static void drawBoard(ChessGame chessGame, ChessGame.TeamColor teamColor, boolean highlightPossibleMoves, ChessPosition position) throws ResponseException {
-        ChessBoard board = chessGame.getBoard();
+    public static void drawBoard(ChessGame c, ChessGame.TeamColor t, boolean h, ChessPosition p) throws ResponseException {
+        ChessBoard board = c.getBoard();
 
         Set<ChessMove> positionsToHighlight = new HashSet<>();
-        if (highlightPossibleMoves) {
-            ChessPiece pieceToHighlight = chessGame.getBoard().getPiece(position);
-            positionsToHighlight = collectValidMoves(chessGame, position);
+        if (h) {
+            ChessPiece pieceToHighlight = c.getBoard().getPiece(p);
+            positionsToHighlight = collectValidMoves(c, p);
             if (pieceToHighlight == null) {
                 throw new ResponseException(ResponseException.Code.ClientError, "No piece on selected square!");
             }
@@ -51,9 +51,9 @@ public class BoardDrawer {
 
         var out = new PrintStream(System.out, true, StandardCharsets.UTF_8);
         out.print(ERASE_SCREEN);
-        drawHeaders(out, teamColor);
-        drawChessBoard(out, board, teamColor, positionsToHighlight, position);
-        drawHeaders(out, teamColor);
+        drawHeaders(out, t);
+        drawChessBoard(out, board, t, positionsToHighlight, p);
+        drawHeaders(out, t);
         out.print(RESET_BG_COLOR);
         out.print(RESET_TEXT_COLOR);
     }
@@ -100,11 +100,11 @@ public class BoardDrawer {
         out.print(row);
     }
 
-    private static void drawChessBoard(PrintStream out, ChessBoard board, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
+    private static void drawChessBoard(PrintStream out, ChessBoard b, ChessGame.TeamColor c, Set<ChessMove> m, ChessPosition p) {
 
-        if (color == ChessGame.TeamColor.BLACK) {
+        if (c == ChessGame.TeamColor.BLACK) {
             for (int boardRow = 0; boardRow < BOARD_SIZE_IN_SQUARES; ++boardRow) {
-                drawRowOfSquares(out, board, boardRow, color, movesToHighlight, posToSpecialHighlight);
+                drawRowOfSquares(out, b, boardRow, c, m, p);
 
                 if (boardRow < BOARD_SIZE_IN_SQUARES - 1) {
                     resetColor(out);
@@ -112,7 +112,7 @@ public class BoardDrawer {
             }
         } else {
             for (int boardRow = BOARD_SIZE_IN_SQUARES - 1; boardRow >= 0; --boardRow) {
-                drawRowOfSquares(out, board, boardRow, color, movesToHighlight, posToSpecialHighlight);
+                drawRowOfSquares(out, b, boardRow, c, m, p);
 
                 if (boardRow > 1) {
                     resetColor(out);
@@ -121,49 +121,49 @@ public class BoardDrawer {
         }
     }
 
-    private static void drawRowOfSquares(PrintStream out, ChessBoard board, int boardRow, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
-        printRow(out, BOARD_ROWS[boardRow]);
+    private static void drawRowOfSquares(PrintStream out, ChessBoard b, int r, ChessGame.TeamColor c, Set<ChessMove> m, ChessPosition p) {
+        printRow(out, BOARD_ROWS[r]);
 
-        if (color == ChessGame.TeamColor.WHITE) {
+        if (c == ChessGame.TeamColor.WHITE) {
             for (int boardCol = 0; boardCol < BOARD_SIZE_IN_SQUARES; ++boardCol) {
-                printSquare(boardRow, boardCol, out, color, movesToHighlight, posToSpecialHighlight, board);
+                printSquare(r, boardCol, out, m, p, b);
             }
         } else {
             for (int boardCol = BOARD_SIZE_IN_SQUARES - 1; boardCol >= 0; --boardCol) {
-                printSquare(boardRow, boardCol, out, color, movesToHighlight, posToSpecialHighlight, board);
+                printSquare(r, boardCol, out, m, p, b);
             }
         }
 
-        printRow(out, BOARD_ROWS[boardRow]);
+        printRow(out, BOARD_ROWS[r]);
         resetColor(out);
         out.println();
     }
 
-    private static void printSquare(int boardRow, int boardCol, PrintStream out, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight, ChessBoard board) {
-        determineCheckerColor(boardRow, boardCol, out, color, movesToHighlight, posToSpecialHighlight);
-        ChessPosition posOfPiece = new ChessPosition(boardRow + 1, boardCol + 1);
-        printPiece(out, board.getPiece(posOfPiece));
+    private static void printSquare(int r, int c, PrintStream out, Set<ChessMove> m, ChessPosition p, ChessBoard b) {
+        determineCheckerColor(r, c, out, m, p);
+        ChessPosition posOfPiece = new ChessPosition(r + 1, c + 1);
+        printPiece(out, b.getPiece(posOfPiece));
     }
 
-    private static void determineCheckerColor(int boardRow, int boardCol, PrintStream out, ChessGame.TeamColor color, Set<ChessMove> movesToHighlight, ChessPosition posToSpecialHighlight) {
+    private static void determineCheckerColor(int r, int c, PrintStream out, Set<ChessMove> m, ChessPosition p) {
         boolean needToHighlight = false;
         boolean specialHighlight = false;
 
-        for (ChessMove move: movesToHighlight) {
+        for (ChessMove move: m) {
             int columnToPossiblyHighlight = move.getEndPosition().getColumn();
             int rowToPossiblyHighlight = move.getEndPosition().getRow();
 
-            if (columnToPossiblyHighlight == boardCol + 1 && rowToPossiblyHighlight == boardRow + 1) {
+            if (columnToPossiblyHighlight == c + 1 && rowToPossiblyHighlight == r + 1) {
                 needToHighlight = true;
                 break;
             }
         }
 
-        if (posToSpecialHighlight != null && boardCol + 1 == posToSpecialHighlight.getColumn() && boardRow + 1 == posToSpecialHighlight.getRow()) {
+        if (p != null && c + 1 == p.getColumn() && r + 1 == p.getRow()) {
             specialHighlight = true;
         }
 
-        setSquareColor(boardRow, boardCol, out, needToHighlight, specialHighlight);
+        setSquareColor(r, c, out, needToHighlight, specialHighlight);
     }
 
     private static void setSquareColor(int boardRow, int boardCol, PrintStream out, boolean needToHighlight, boolean specialHighlight) {
