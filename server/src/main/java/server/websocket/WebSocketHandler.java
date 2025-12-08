@@ -69,6 +69,13 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             ChessMove move = command.getMove();
             if (move != null) {
                 ChessPiece movedPiece = game.game().getBoard().getPiece(move.getStartPosition());
+
+                if (movedPiece == null) {
+                    var notYourTurnError = new ErrorMessage("Error: No piece on position entered");
+                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
+                    return;
+                }
+
                 ChessGame.TeamColor colorOfMovedPiece = movedPiece.getTeamColor();
 
                 if (colorOfMovedPiece != null && colorOfMovedPiece != color) {
@@ -82,7 +89,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 }
 
                 if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
-                    throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
+                    var notYourTurnError = new ErrorMessage("Error: not your team's turn");
+                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
+                    return;
+                    //throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
                 }
             }
 
@@ -168,7 +178,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         try {
             game.game().makeMove(move);
         } catch (InvalidMoveException e) {
-            var invalidMoveMessage = new ErrorMessage("Error: invalid move!");
+            var invalidMoveMessage = new ErrorMessage("Error: invalid move");
             session.getRemote().sendString(new Gson().toJson(invalidMoveMessage));
             return;
         }

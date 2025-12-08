@@ -14,7 +14,6 @@ public class ChessPosition {
     int row;
     int col;
 
-    HashMap<Integer, Integer> rowMapper;
     HashMap<Integer, Character> columnMapper;
 
     public ChessPosition(int row, int col) {
@@ -30,16 +29,6 @@ public class ChessPosition {
         columnMapper.put(6, 'f');
         columnMapper.put(7, 'g');
         columnMapper.put(8, 'h');
-
-        rowMapper = new HashMap<>();
-        rowMapper.put(1, 8);
-        rowMapper.put(2, 7);
-        rowMapper.put(3, 6);
-        rowMapper.put(4, 5);
-        rowMapper.put(5, 4);
-        rowMapper.put(6, 3);
-        rowMapper.put(7, 2);
-        rowMapper.put(8, 1);
     }
 
     /**
@@ -68,7 +57,7 @@ public class ChessPosition {
 
     public String toChessTablePosition() {
         String c = String.valueOf(columnMapper.get(col));
-        String r = String.valueOf(rowMapper.get(row));
+        String r = String.valueOf(row);
         return c + r;
     }
 

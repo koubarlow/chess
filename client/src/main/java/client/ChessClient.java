@@ -26,7 +26,6 @@ public class ChessClient implements NotificationHandler {
     private ChessGame.TeamColor currentTeamColor;
     private int currentGameId;
     private final HashMap<Character, Integer> columnTable;
-    private final HashMap<Integer, Integer> rowMapper;
 
     public ChessClient(String serverUrl) throws ResponseException {
         server = new ServerFacade(serverUrl);
@@ -34,7 +33,6 @@ public class ChessClient implements NotificationHandler {
 
         games = new HashMap<>();
         columnTable = new HashMap<>();
-        rowMapper = new HashMap<>();
         columnTable.put('a', 1);
         columnTable.put('b', 2);
         columnTable.put('c', 3);
@@ -43,15 +41,6 @@ public class ChessClient implements NotificationHandler {
         columnTable.put('f', 6);
         columnTable.put('g', 7);
         columnTable.put('h', 8);
-
-        rowMapper.put(1, 8);
-        rowMapper.put(2, 7);
-        rowMapper.put(3, 6);
-        rowMapper.put(4, 5);
-        rowMapper.put(5, 4);
-        rowMapper.put(6, 3);
-        rowMapper.put(7, 2);
-        rowMapper.put(8, 1);
     }
 
     public void run() {
@@ -77,14 +66,10 @@ public class ChessClient implements NotificationHandler {
     }
 
     public void notify(ServerMessage serverMessage) {
-        try {
-            switch (serverMessage.getServerMessageType()) {
-                case NOTIFICATION -> displayNotification(serverMessage.getMessage());
-                case ERROR -> displayError(serverMessage.getMessage());
-                case LOAD_GAME -> loadGame();
-            }
-        } catch (ResponseException ex) {
-            System.out.println(ex.getMessage());
+        switch (serverMessage.getServerMessageType()) {
+            case NOTIFICATION -> displayNotification(serverMessage.getMessage());
+            case ERROR -> displayError(serverMessage.getMessage());
+            case LOAD_GAME -> loadGame();
         }
         printPrompt();
     }
@@ -281,8 +266,12 @@ public class ChessClient implements NotificationHandler {
         return "Board redrawn.";
     }
 
-    private void loadGame() throws ResponseException {
-        redrawBoard();
+    private void loadGame() {
+        try {
+            redrawBoard();
+        } catch (ResponseException e) {
+            displayError(e.getMessage());
+        }
     }
 
     public String leaveGame() throws ResponseException {
@@ -316,7 +305,10 @@ public class ChessClient implements NotificationHandler {
                 //server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
                 ws.makeMove(authData.authToken(), currentGameId, moveToMake);
 
-                return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
+                if (pieceToMove == null || game.game().getTeamTurn() != currentTeamColor) {
+                    return "Unable to move.";
+                }
+                return "Attempting to move " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column for piece");
             }
