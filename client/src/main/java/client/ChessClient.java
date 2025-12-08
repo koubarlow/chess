@@ -206,7 +206,8 @@ public class ChessClient implements NotificationHandler {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: game not found");
             }
 
-            server.updateGame(new UpdateGameRequest(this.currentTeamColor, this.games.get(gameId).gameID(), username, null), this.authData.authToken());
+            int trueGameId = this.games.get(gameId).gameID();
+            server.updateGame(new UpdateGameRequest(this.currentTeamColor, trueGameId, username, null), this.authData.authToken());
             this.currentGameId = gameId;
             this.state = State.GAMEPLAY;
 
