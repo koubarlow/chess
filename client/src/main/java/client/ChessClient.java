@@ -224,10 +224,8 @@ public class ChessClient implements NotificationHandler {
             server.updateGame(new UpdateGameRequest(this.currentTeamColor, this.games.get(gameId).gameID(), username, null), this.authData.authToken());
             this.currentGameId = gameId;
             this.state = State.GAMEPLAY;
-            GameData game = server.getGameById(this.authData.authToken(), gameId);
 
-            ws.connect(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
-            //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
+            ws.connect(authData.authToken(), this.currentGameId);
             return String.format("You joined game %s as %s.", gameId, this.currentTeamColor);
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <ID> <WHITE|BLACK>");
@@ -257,7 +255,7 @@ public class ChessClient implements NotificationHandler {
             GameData game = server.getGameById(this.authData.authToken(), this.games.get(gameId).gameID());
             this.currentGameId = gameId;
 
-            ws.connect(authData.authToken(), this.currentGameId, this.username, null);
+            ws.connect(authData.authToken(), this.currentGameId);
             this.state = State.OBSERVING;
             BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
             return String.format("You're observing game %s as %s.", gameId, this.currentTeamColor);
@@ -289,7 +287,7 @@ public class ChessClient implements NotificationHandler {
 
     public String leaveGame() throws ResponseException {
         assertPlayingOrWatching();
-        ws.leave(authData.authToken(), this.currentGameId, this.username, this.currentTeamColor);
+        ws.leave(authData.authToken(), this.currentGameId);
         GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
         // gotta update game! dont forget
         this.state = State.SIGNEDIN;
@@ -313,25 +311,14 @@ public class ChessClient implements NotificationHandler {
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
 
                 ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
-                game.game().makeMove(moveToMake);
+                //game.game().makeMove(moveToMake);
 
-//                if (pieceToMove.getTeamColor() == this.currentTeamColor) {
-//                    ChessGame.TeamColor opposingColor = ChessGame.TeamColor.WHITE;
-//                    if (currentTeamColor == ChessGame.TeamColor.BLACK) {
-//                        opposingColor = ChessGame.TeamColor.BLACK;
-//                    }
-//                    if (!game.game().isInCheckmate(currentTeamColor) || !game.game().isInCheckmate(opposingColor)) {
-//                    }
-//                }
-                server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
-                ws.makeMove(authData.authToken(), currentGameId, moveToMake, this.username, this.currentTeamColor, pieceToMove.getPieceType().name());
+                //server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
+                ws.makeMove(authData.authToken(), currentGameId, moveToMake);
 
-                //BoardDrawer.drawBoard(game.game(), this.currentTeamColor, false, null);
                 return "Moved " + pieceToMove.getPieceType().name().toLowerCase() + " to " + params[1];
             } catch (NumberFormatException e) {
                 throw new ResponseException(ResponseException.Code.ClientError, "Exception: please enter a valid row and column for piece");
-            } catch (InvalidMoveException e) {
-                throw new ResponseException(ResponseException.Code.ClientError, e.getMessage());
             }
         }
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <POSITION>");
@@ -339,7 +326,7 @@ public class ChessClient implements NotificationHandler {
 
     public String resign() throws ResponseException {
         assertInGamePlay();
-        ws.resign(authData.authToken(), currentGameId, this.username, this.currentTeamColor);
+        ws.resign(authData.authToken(), currentGameId);
         this.state = State.SIGNEDIN;
         return "Resigning...";
     }

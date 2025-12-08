@@ -42,23 +42,23 @@ public class WebSocketFacade extends Endpoint {
     public void onOpen(Session session, EndpointConfig endpointConfig) {
     }
 
-    public void connect(String authToken, int gameId, String username, ChessGame.TeamColor color) throws ResponseException {
-        sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId, username, null, color, null);
+    public void connect(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.CONNECT, authToken, gameId, null);
     }
 
-    public void makeMove(String authToken, int gameId, ChessMove move, String username, ChessGame.TeamColor color, String piece) throws ResponseException {
-        sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameId, username, move, color, piece);
+    public void makeMove(String authToken, int gameId, ChessMove move) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.MAKE_MOVE, authToken, gameId, move);
     }
 
-    public void leave(String authToken, int gameId, String username, ChessGame.TeamColor color) throws ResponseException {
-        sendCommand(UserGameCommand.CommandType.LEAVE, authToken, gameId, username, null, color, null);
+    public void leave(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.LEAVE, authToken, gameId, null);
     }
 
-    public void resign(String authToken, int gameId, String username, ChessGame.TeamColor color) throws ResponseException {
-        sendCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId, username, null, color, null);
+    public void resign(String authToken, int gameId) throws ResponseException {
+        sendCommand(UserGameCommand.CommandType.RESIGN, authToken, gameId, null);
     }
 
-    private void sendCommand(UserGameCommand.CommandType commandType, String authToken, int gameId, String username, ChessMove move, ChessGame.TeamColor color, String piece) throws ResponseException {
+    private void sendCommand(UserGameCommand.CommandType commandType, String authToken, int gameId, ChessMove move) throws ResponseException {
         try {
             var command = new UserGameCommand(commandType, authToken, gameId, move);
             this.session.getBasicRemote().sendText(new Gson().toJson(command));

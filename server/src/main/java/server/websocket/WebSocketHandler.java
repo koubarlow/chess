@@ -161,30 +161,7 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
     private void makeMove(Session session, int gameId, String username, ChessGame.TeamColor color, GameData game, ChessMove move, String authToken) throws Exception {
 
-        if (game.game().isGameOver()) {
-            var gameAlreadyOver = new ErrorMessage("Game is already over.");
-            session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
-            return;
-        }
-
-        ChessGame.TeamColor opposingColor = ChessGame.TeamColor.BLACK;
-        if (color == ChessGame.TeamColor.BLACK) {
-            opposingColor = ChessGame.TeamColor.WHITE;
-        }
-
-        boolean isInCheckmate = game.game().isInCheckmate(color);
-        boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
-        if (isInCheckmate || isOpponentInCheckmate) {
-            var checkmateMessage = new ErrorMessage(String.format("%s has been checkmated! Good game.", color.name()));
-            connections.broadcast(gameId, null, checkmateMessage);
-            return;
-        } else if (game.game().isInCheck(color)) {
-            var checkmateMessage = new ErrorMessage(String.format("%s is in check!", color.name()));
-            connections.broadcast(gameId, null, checkmateMessage);
-            return;
-        } else if (game.game().isInStalemate(color)) {
-            var checkmateMessage = new ErrorMessage("Stalemate! Good game.");
-            connections.broadcast(gameId, null, checkmateMessage);
+        if (gameStatusUpdated(session, gameId, game, color)) {
             return;
         }
 
@@ -198,7 +175,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         var loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, game);
         connections.broadcast(gameId, null, loadGameMessage);
-        //session.getRemote().sendString(new Gson().toJson(loadGameMessage));
 
         ChessPiece pieceToDisplay = game.game().getBoard().getPiece(move.getEndPosition());
         String pieceName = "a piece";
@@ -212,12 +188,35 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         connections.broadcast(gameId, session, serverMessage);
     }
 
-//    public void notifyOfConnection() throws ResponseException {
-//        try {
-//            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "someone connected");
-//            connections.broadcast(1, null, serverMessage);
-//        } catch (Exception ex) {
-//            throw new ResponseException(ResponseException.Code.ServerError, ex.getMessage());
-//        }
-//    }
+    private boolean gameStatusUpdated(Session session, int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
+        if (game.game().isGameOver()) {
+            var gameAlreadyOver = new ErrorMessage("Game is already over.");
+            session.getRemote().sendString(new Gson().toJson(gameAlreadyOver));
+            return true;
+        }
+
+        ChessGame.TeamColor opposingColor = ChessGame.TeamColor.BLACK;
+        if (color == ChessGame.TeamColor.BLACK) {
+            opposingColor = ChessGame.TeamColor.WHITE;
+        }
+
+        boolean isInCheckmate = game.game().isInCheckmate(color);
+        boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
+
+        if (isInCheckmate || isOpponentInCheckmate) {
+            var checkmateMessage = new ErrorMessage(String.format("%s has been checkmated! Good game.", color.name()));
+            connections.broadcast(gameId, null, checkmateMessage);
+            return true;
+        } else if (game.game().isInCheck(color)) {
+            var checkmateMessage = new ErrorMessage(String.format("%s is in check!", color.name()));
+            connections.broadcast(gameId, null, checkmateMessage);
+            return true;
+        } else if (game.game().isInStalemate(color)) {
+            var checkmateMessage = new ErrorMessage("Stalemate! Good game.");
+            connections.broadcast(gameId, null, checkmateMessage);
+            return true;
+        }
+
+        return false;
+    }
 }
