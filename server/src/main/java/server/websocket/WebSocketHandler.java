@@ -71,9 +71,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 ChessPiece movedPiece = game.game().getBoard().getPiece(move.getStartPosition());
 
                 if (movedPiece == null) {
-                    var notYourTurnError = new ErrorMessage("Error: No piece on position entered");
-                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
-                    return;
+                    var noPieceFoundError = new ErrorMessage("Error: No piece on position entered");
+                    session.getRemote().sendString(new Gson().toJson(noPieceFoundError));
+                    throw new ResponseException(ResponseException.Code.ClientError, noPieceFoundError.getMessage());
                 }
 
                 ChessGame.TeamColor colorOfMovedPiece = movedPiece.getTeamColor();
@@ -88,12 +88,11 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                     throw new ResponseException(ResponseException.Code.ClientError, "Error: already in stalemate!");
                 }
 
-                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
-                    var notYourTurnError = new ErrorMessage("Error: not your team's turn");
-                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
-                    return;
-                    //throw new ResponseException(ResponseException.Code.ClientError, "Error: not your team's turn!");
-                }
+//                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
+//                    var notYourTurnError = new ErrorMessage("Error: not your team's turn");
+//                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
+//                    throw new ResponseException(ResponseException.Code.ClientError, notYourTurnError.getMessage());
+//                }
             }
 
             switch (command.getCommandType()) {
