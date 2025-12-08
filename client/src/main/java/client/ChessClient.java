@@ -318,7 +318,24 @@ public class ChessClient implements NotificationHandler {
 
     public String resign() throws ResponseException {
         assertInGamePlay();
-        ws.resign(authData.authToken(), currentGameId);
+
+        System.out.println(SET_TEXT_COLOR_BLUE + "Are you sure you want to resign?");
+        printPrompt();
+        Scanner scanner = new Scanner(System.in);
+        String line = scanner.nextLine();
+
+        String[] tokens = line.toLowerCase().split(" ");
+        String cmd = (tokens.length > 0) ? tokens[0] : "help";
+
+        switch (cmd) {
+            case "yes" -> ws.resign(authData.authToken(), currentGameId);
+            case "y" -> ws.resign(authData.authToken(), currentGameId);
+            default -> {
+                return "Chose not to resign.";
+            }
+        }
+
+
         this.state = State.SIGNEDIN;
         return "Resigning...";
     }
