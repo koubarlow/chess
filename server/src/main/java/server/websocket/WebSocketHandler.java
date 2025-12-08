@@ -5,7 +5,6 @@ import com.google.gson.Gson;
 import dataaccess.auth.AuthDAO;
 import dataaccess.auth.MySqlAuthDAO;
 import dataaccess.exceptions.UnauthorizedException;
-import dataaccess.game.GameDAO;
 import dataaccess.game.MySqlGameDAO;
 import dataaccess.user.MySqlUserDAO;
 import dataaccess.user.UserDAO;
@@ -87,12 +86,6 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
                 } else if (game.game().isInStalemate(color)) {
                     throw new ResponseException(ResponseException.Code.ClientError, "Error: already in stalemate!");
                 }
-
-//                if (colorOfMovedPiece != null && game.game().getTeamTurn() != colorOfMovedPiece) {
-//                    var notYourTurnError = new ErrorMessage("Error: not your team's turn");
-//                    session.getRemote().sendString(new Gson().toJson(notYourTurnError));
-//                    throw new ResponseException(ResponseException.Code.ClientError, notYourTurnError.getMessage());
-//                }
             }
 
             switch (command.getCommandType()) {
@@ -126,7 +119,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         var loadGameMessage = new ServerMessage(ServerMessage.ServerMessageType.LOAD_GAME, null, game);
         session.getRemote().sendString(new Gson().toJson(loadGameMessage));
 
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s joined the game as %s", username, teamColor), null);
+        String joinedGameMsg = String.format("%s joined the game as %s", username, teamColor);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, joinedGameMsg, null);
         connections.broadcast(gameId, session, serverMessage);
     }
 
@@ -152,7 +146,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             gameDAO.updateGame(new UpdateGameRequest(null, gameId, null, newGameData), authToken);
         }
 
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has left the game", username, teamColor), null);
+        String leftGameMsg = String.format("%s(%s) has left the game", username, teamColor);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, leftGameMsg, null);
         connections.broadcast(gameId, session, serverMessage);
     }
 
@@ -160,7 +155,8 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         if (!game.game().isGameOver()) {
             game.game().setGameOver(true);
             gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
-            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has resigned. Good game!", username, color.name()), null);
+            String resignedMsg = String.format("%s(%s) has resigned. Good game!", username, color.name());
+            var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, resignedMsg, null);
             connections.broadcast(gameId, null, serverMessage);
         } else {
             var gameAlreadyOver = new ErrorMessage("Game is already over.");
@@ -176,9 +172,9 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         try {
             game.game().makeMove(move);
-            inStalemate(session, gameId, game, color);
-            playerInCheck(session, gameId, game, color);
-            inCheckmate(session, gameId, game, color);
+            inStalemate(gameId, game, color);
+            playerInCheck(gameId, game, color);
+            inCheckmate(gameId, game, color);
         } catch (InvalidMoveException e) {
             var invalidMoveMessage = new ErrorMessage("Error: invalid move");
             session.getRemote().sendString(new Gson().toJson(invalidMoveMessage));
@@ -196,7 +192,10 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
 
         gameDAO.updateGame(new UpdateGameRequest(color, gameId, null, game), authToken);
 
-        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, move.getStartPosition().toChessTablePosition(), move.getEndPosition().toChessTablePosition()), null);
+        String boardStartPos = move.getStartPosition().toChessTablePosition();
+        String boardEndPos = move.getEndPosition().toChessTablePosition();
+        String movedMsg = String.format("%s(%s) has moved %s from %s to %s", username, color.name(), pieceName, boardStartPos, boardEndPos);
+        var serverMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, movedMsg, null);
         connections.broadcast(gameId, session, serverMessage);
     }
 
@@ -207,26 +206,27 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
             return true;
         }
 
-        if (inCheckmate(session, gameId, game, color)) {
+        if (inCheckmate(gameId, game, color)) {
             return true;
         }
-        if (playerInCheck(session, gameId, game, color)) {
+        if (playerInCheck(gameId, game, color)) {
             return true;
         }
 
-        return inStalemate(session, gameId, game, color);
+        return inStalemate(gameId, game, color);
     }
-    private boolean playerInCheck(Session session, int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
+    private boolean playerInCheck(int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
 
         if (game.game().isInCheck(color)) {
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s is in check!", color.name()), game);
+            String inCheckMsg = String.format("%s is in check!", color.name());
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, inCheckMsg, game);
             connections.broadcast(gameId, null, checkmateMessage);
             return true;
         }
         return false;
     }
 
-    private boolean inCheckmate(Session session, int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
+    private boolean inCheckmate(int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
         ChessGame.TeamColor opposingColor = ChessGame.TeamColor.BLACK;
         if (color == ChessGame.TeamColor.BLACK) {
             opposingColor = ChessGame.TeamColor.WHITE;
@@ -236,14 +236,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
 
         if (isInCheckmate || isOpponentInCheckmate) {
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, String.format("%s has been checkmated! Good game.", color.name()), null);
+            String checkmateMsg = String.format("%s has been checkmated! Good game.", color.name());
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkmateMsg, null);
             connections.broadcast(gameId, null, checkmateMessage);
             return true;
         }
         return false;
     }
 
-    private boolean inStalemate(Session session, int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
+    private boolean inStalemate(int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
         if (game.game().isInStalemate(color)) {
             var checkmateMessage =  new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, "Stalemate! Good game.", null);
             connections.broadcast(gameId, null, checkmateMessage);
