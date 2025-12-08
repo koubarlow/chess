@@ -14,11 +14,13 @@ public class ServerMessage {
     ServerMessageType serverMessageType;
     String message;
     GameData game;
+    String errorMessage;
 
     public ServerMessage(ServerMessageType serverMessageType) {
         this.serverMessageType = serverMessageType;
         message = null;
         game = null;
+        errorMessage = null;
     }
 
     public enum ServerMessageType {
@@ -40,6 +42,8 @@ public class ServerMessage {
     public String getMessage() { return this.message ;}
 
     public GameData getGame() { return this.game; }
+
+    public String getErrorMessage() { return this.errorMessage; }
 
     @Override
     public boolean equals(Object o) {

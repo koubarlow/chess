@@ -68,7 +68,7 @@ public class ChessClient implements NotificationHandler {
     public void notify(ServerMessage serverMessage) {
         switch (serverMessage.getServerMessageType()) {
             case NOTIFICATION -> displayNotification(serverMessage.getMessage());
-            case ERROR -> displayError(serverMessage.getMessage());
+            case ERROR -> displayError(serverMessage.getErrorMessage());
             case LOAD_GAME -> loadGame();
         }
         printPrompt();
