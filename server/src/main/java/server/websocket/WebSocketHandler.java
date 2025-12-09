@@ -216,10 +216,24 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         return inStalemate(gameId, game, color);
     }
     private boolean playerInCheck(int gameId, GameData game, ChessGame.TeamColor color) throws IOException {
+        ChessGame.TeamColor opposingColor = ChessGame.TeamColor.BLACK;
+        if (color == ChessGame.TeamColor.BLACK) {
+            opposingColor = ChessGame.TeamColor.WHITE;
+        }
 
-        if (game.game().isInCheck(color)) {
-            String inCheckMsg = String.format("%s is in check!", color.name());
-            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, inCheckMsg, game);
+        boolean isInCheck = game.game().isInCheck(color);
+        boolean isOpponentInCheck = game.game().isInCheck(opposingColor);
+
+        String username = "";
+        if (color == ChessGame.TeamColor.WHITE) {
+            username = game.whiteUsername();
+        } else if (color == ChessGame.TeamColor.BLACK) {
+            username = game.blackUsername();
+        }
+
+        if (isInCheck || isOpponentInCheck) {
+            String checkmateMsg = String.format("%s has been put in been check by %s!", opposingColor, username);
+            var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkmateMsg, null);
             connections.broadcast(gameId, null, checkmateMessage);
             return true;
         }
@@ -235,8 +249,15 @@ public class WebSocketHandler implements WsConnectHandler, WsMessageHandler, WsC
         boolean isInCheckmate = game.game().isInCheckmate(color);
         boolean isOpponentInCheckmate = game.game().isInCheckmate(opposingColor);
 
+        String username = "";
+        if (color == ChessGame.TeamColor.WHITE) {
+            username = game.whiteUsername();
+        } else if (color == ChessGame.TeamColor.BLACK) {
+            username = game.blackUsername();
+        }
+
         if (isInCheckmate || isOpponentInCheckmate) {
-            String checkmateMsg = String.format("%s has been checkmated! Good game.", color.name());
+            String checkmateMsg = String.format("%s has been checkmated by %s! Good game.", opposingColor, username);
             var checkmateMessage = new ServerMessage(ServerMessage.ServerMessageType.NOTIFICATION, checkmateMsg, null);
             connections.broadcast(gameId, null, checkmateMessage);
             return true;

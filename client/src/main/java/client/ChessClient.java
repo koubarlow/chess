@@ -290,6 +290,16 @@ public class ChessClient implements NotificationHandler {
         assertInGamePlay();
         if (params.length > 1 && params[0].length() == 2 && params[1].length() == 2) {
             try {
+
+                boolean letterPos1 = Character.isLetter(params[0].charAt(0));
+                boolean numberPos1 = Character.isDigit(params[0].charAt(1));
+                boolean letterPos2 = Character.isLetter(params[1].charAt(0));
+                boolean numberPos2 = Character.isDigit(params[1].charAt(1));
+
+                if (!letterPos1 || !numberPos1 || !letterPos2 || !numberPos2) {
+                    return "Invalid position! Needs to start with a letter followed by a number: e.g. a2 or e7, etc.";
+                }
+
                 int initialCol = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
                 int initialRow = Integer.parseInt(String.valueOf(params[0].charAt(1)));
                 int endCol = this.columnTable.get(params[1].charAt(0));
@@ -301,9 +311,11 @@ public class ChessClient implements NotificationHandler {
                 ChessPiece pieceToMove = game.game().getBoard().getPiece(beginningPos);
 
                 ChessMove moveToMake = new ChessMove(beginningPos, endPos, null);
-                //game.game().makeMove(moveToMake);
 
-                //server.updateGame(new UpdateGameRequest(null, this.games.get(currentGameId).gameID(), null, game), this.authData.authToken());
+                if (pieceToMove.getPieceType() == ChessPiece.PieceType.PAWN) {
+                    moveToMake = checkIfEligibleForPromotion(pieceToMove, beginningPos, endPos);
+                }
+
                 ws.makeMove(authData.authToken(), currentGameId, moveToMake);
 
                 if (pieceToMove == null || game.game().getTeamTurn() != currentTeamColor) {
@@ -317,6 +329,53 @@ public class ChessClient implements NotificationHandler {
         throw new ResponseException(ResponseException.Code.ClientError, "Exception: <POSITION>");
     }
 
+    private ChessMove checkIfEligibleForPromotion(ChessPiece piece, ChessPosition beginningPos, ChessPosition endPos) {
+        if (piece.getTeamColor() == ChessGame.TeamColor.WHITE) {
+            if (beginningPos.getRow() == 7) {
+                ChessPiece.PieceType pieceChosen = getPromotionPiece();
+                return new ChessMove(beginningPos, endPos, pieceChosen);
+            }
+        } else if (beginningPos.getRow() == 2) {
+            ChessPiece.PieceType pieceChosen = getPromotionPiece();
+            return new ChessMove(beginningPos, endPos, pieceChosen);
+        }
+
+        return new ChessMove(beginningPos, endPos, null);
+    }
+
+    private ChessPiece.PieceType getPromotionPiece() {
+        System.out.println(SET_TEXT_COLOR_BLUE + "What do you want to promote to?");
+        System.out.println(SET_TEXT_COLOR_BLUE + "Options: queen, rook, knight, bishop, none");
+        printPrompt();
+        Scanner scanner = new Scanner(System.in);
+        String line = scanner.nextLine();
+
+        String[] tokens = line.toLowerCase().split(" ");
+        String cmd = (tokens.length > 0) ? tokens[0] : "help";
+
+        switch (cmd) {
+            case "queen" -> {
+                return ChessPiece.PieceType.QUEEN;
+            }
+            case "rook" -> {
+                return ChessPiece.PieceType.ROOK;
+            }
+            case "knight" -> {
+                return ChessPiece.PieceType.KNIGHT;
+            }
+            case "bishop" -> {
+                return ChessPiece.PieceType.BISHOP;
+            }
+            case "none" -> {
+                return null;
+            }
+            default -> {
+                System.out.println(SET_TEXT_COLOR_BLUE + "Invalid piece");
+                System.out.println(SET_TEXT_COLOR_BLUE + "Options: queen, rook, knight, bishop, none");
+                return getPromotionPiece();
+            }
+        }
+    }
     public String resign() throws ResponseException {
         assertInGamePlay();
 
@@ -345,8 +404,23 @@ public class ChessClient implements NotificationHandler {
         assertPlayingOrWatching();
         if (params.length == 1 && params[0].length() == 2) {
             try {
-                int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
+
+                boolean letterPos1 = Character.isLetter(params[0].charAt(0));
+                boolean numberPos1 = Character.isDigit(params[0].charAt(1));
+
+                if (!letterPos1 || !numberPos1) {
+                    return "Invalid position! Needs to start with a letter followed by a number: e.g. a2 or e7, etc.";
+                }
+
                 int row = Integer.parseInt(String.valueOf(params[0].charAt(1)));
+                int col = this.columnTable.get(Character.toLowerCase(params[0].charAt(0)));
+
+                ChessPosition posToGet = new ChessPosition(row, col);
+                ChessPiece chessPiece = this.games.get(currentGameId).game().getBoard().getPiece(posToGet);
+
+                if (chessPiece == null) {
+                    return "Error: No piece found at position entered.";
+                }
 
                 GameData game = server.getGameById(this.authData.authToken(), this.games.get(currentGameId).gameID());
                 BoardDrawer.drawBoard(game.game(), this.currentTeamColor, true, new ChessPosition(row, col));
